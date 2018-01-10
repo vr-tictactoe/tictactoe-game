@@ -7,6 +7,8 @@ import {
   View,
   VrButton
 } from 'react-vr';
+import reactMixin from 'react-mixin';
+import TimerMixin from 'react-timer-mixin';
 
 export default class tictactoe_game extends React.Component {
   constructor(props) {
@@ -14,16 +16,71 @@ export default class tictactoe_game extends React.Component {
 
     this.state = {
       message: 'Player X Turn',
-      focus: false
+      boxFocus: [false, false, false, false, false, false, false, false, false],
+      boxSelection: [null, null, null, null, null, null, null, null, null],
+      player: 'X',
+      boxTimer: null
     }
   }
 
-  boxFocused() {
-    this.setState({ message: 'Button 1 clicked', focus: true })
+  boxFocused(index) {
+    const itemFocus = this.state.boxFocus
+    itemFocus[index] = true
+    let t = setTimeout(() => {
+      const itemSelected = this.state.boxSelection
+      itemSelected[index] = this.state.player
+      console.log(this.state.boxSelection)
+      this.setState({ message: `Box ${index} selected`, boxSelection: itemSelected })
+    }, 2000); 
+
+    this.setState({ 
+      message: `Box ${index} focused`, 
+      boxFocus: itemFocus,
+      boxTimer: t
+    })
+
+    /* Select Box when focused 2 seconds or more  */
+    
   }
 
-  boxLeave() {
-    
+  boxLeave(index) {
+    const itemFocus = this.state.boxFocus
+    itemFocus[index] = false
+    clearTimeout(this.state.boxTimer)
+
+    this.setState({
+      boxFocus: itemFocus
+    })
+  }
+
+  setBoxContent(index) {
+    if (this.state.boxFocus[index]) {
+      return {
+        backgroundColor: 'rgba(237, 20, 61, 0.4117647058823529)',
+        margin: 0.1,
+        height: 2,
+        width: 2,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }
+    } else {
+      return { 
+        backgroundColor: 'gold', 
+        margin: 0.1, height: 2, width: 2, 
+        alignItems: 'center', justifyContent: 'center', 
+      }
+    }
+
+    if (this.state.boxSelection[index]) {
+      return {
+        backgroundColor: 'teal',
+        margin: 0.1,
+        height: 2,
+        width: 2,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }
+    }
   }
 
   render() {
@@ -71,22 +128,22 @@ export default class tictactoe_game extends React.Component {
       },
 
       boxFocus: {
-        backgroundColor: 'gold',
-        borderColor: 'crimson',
+        backgroundColor: 'rgba(237, 20, 61, 0.4117647058823529)',
+        margin: 0.1,
+        height: 2,
+        width: 2,
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+
+      boxSelected: {
+        backgroundColor: 'teal',
         margin: 0.1,
         height: 2,
         width: 2,
         alignItems: 'center',
         justifyContent: 'center',
       }
-    }
-
-    let boxStyle;
-
-    if (this.state.focus) {
-      boxStyle = styles.box
-    } else {
-      boxStyle = styles.boxFocus
     }
 
     return (
@@ -96,41 +153,16 @@ export default class tictactoe_game extends React.Component {
         <View style={styles.container}>
           <Text style={styles.title}>{this.state.message}</Text>
           <View style={styles.board}>
-            <VrButton style={boxStyle} onEnter={() => this.boxFocused()}>
-              <Text style={styles.boardSymbol}> 1 </Text>
-            </VrButton>
-
-            <VrButton style={boxStyle} onEnter={() => this.setState({ message: 'Button 2 clicked' })}>
-              <Text style={styles.boardSymbol}> 2 </Text>
-            </VrButton>
-
-            <VrButton style={boxStyle} onEnter={() => this.setState({ message: 'Button 3 clicked' })}>
-              <Text style={styles.boardSymbol}> 3 </Text>
-            </VrButton>
-
-            <VrButton style={boxStyle} onEnter={() => this.setState({ message: 'Button 4 clicked' })}>
-              <Text style={styles.boardSymbol}> 4 </Text>
-            </VrButton>
-
-            <VrButton style={boxStyle} onEnter={() => this.setState({ message: 'Button 5 clicked' })}>
-              <Text style={styles.boardSymbol}> 5 </Text>
-            </VrButton>
-
-            <VrButton style={boxStyle} onEnter={() => this.setState({ message: 'Button 6 clicked' })}>
-              <Text style={styles.boardSymbol}> 6 </Text>
-            </VrButton>
-
-            <VrButton style={boxStyle} onEnter={() => this.setState({ message: 'Button 7 clicked' })}>
-              <Text style={styles.boardSymbol}> 7 </Text>
-            </VrButton>
-
-            <VrButton style={boxStyle} onEnter={() => this.setState({ message: 'Button 8 clicked' })}>
-              <Text style={styles.boardSymbol}> 8 </Text>
-            </VrButton>
-            
-            <VrButton style={boxStyle} onEnter={() => this.setState({ message: 'Button 9 clicked' })}>
-              <Text style={styles.boardSymbol}> 6 </Text>
-            </VrButton>
+            {
+              this.state.boxSelection.map((box, index) => {
+                return (
+                  <VrButton key={index} style={this.setBoxContent(index)} 
+                    onEnter={() => this.boxFocused(index)} onExit={() => this.boxLeave(index)}>
+                    <Text style={styles.boardSymbol}> {box !== null ? box : ''} </Text>
+                  </VrButton>
+                )
+              })
+            }
           </View>
         </View>
         
