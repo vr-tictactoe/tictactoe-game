@@ -18,29 +18,33 @@ export default class tictactoe_game extends React.Component {
       message: 'Player X Turn',
       boxFocus: [false, false, false, false, false, false, false, false, false],
       boxSelection: [null, null, null, null, null, null, null, null, null],
-      player: 'X',
-      boxTimer: null
+      currentPlayer: 'X',
+      boxTimer: null,
+      boardDisplayed: true
     }
   }
 
   boxFocused(index) {
     const itemFocus = this.state.boxFocus
     itemFocus[index] = true
-    let t = setTimeout(() => {
+
+    let timerFocused = setTimeout(() => {
       const itemSelected = this.state.boxSelection
-      itemSelected[index] = this.state.player
-      console.log(this.state.boxSelection)
-      this.setState({ message: `Box ${index} selected`, boxSelection: itemSelected })
+      itemSelected[index] = this.state.currentPlayer
+
+      this.setState({ 
+        message: `Box ${index} selected`, 
+        boxSelection: itemSelected 
+      })
+
+      this.checkWinner()
     }, 2000); 
 
     this.setState({ 
       message: `Box ${index} focused`, 
       boxFocus: itemFocus,
-      boxTimer: t
-    })
-
-    /* Select Box when focused 2 seconds or more  */
-    
+      boxTimer: timerFocused
+    })    
   }
 
   boxLeave(index) {
@@ -51,6 +55,28 @@ export default class tictactoe_game extends React.Component {
     this.setState({
       boxFocus: itemFocus
     })
+  }
+
+  checkWinner() {
+    // Testing
+    Array.prototype.allValuesSame = function () {
+      for (var i = 1; i < this.length; i++) {
+        if (this[i] !== this[0])
+          return false;
+      }
+
+      return true;
+    }
+
+    if (this.state.boxSelection.allValuesSame()) {
+      this.setState({
+        message: "Player X WIN!",
+        boardDisplayed: false
+      })
+
+      console.log(`============="Player X WIN!`)
+    }
+    // Testing End
   }
 
   setBoxContent(index) {
@@ -149,22 +175,23 @@ export default class tictactoe_game extends React.Component {
     return (
       <View>
         <Pano source={asset('winter.jpg')}/>
-        
-        <View style={styles.container}>
-          <Text style={styles.title}>{this.state.message}</Text>
-          <View style={styles.board}>
-            {
-              this.state.boxSelection.map((box, index) => {
-                return (
-                  <VrButton key={index} style={this.setBoxContent(index)} 
-                    onEnter={() => this.boxFocused(index)} onExit={() => this.boxLeave(index)}>
-                    <Text style={styles.boardSymbol}> {box !== null ? box : ''} </Text>
-                  </VrButton>
-                )
-              })
-            }
+        { 
+         this.state.boardDisplayed && <View style={styles.container}>
+            <Text style={styles.title}>{this.state.message}</Text>
+            <View style={styles.board}>
+              {
+                this.state.boxSelection.map((box, index) => {
+                  return (
+                    <VrButton key={index} style={this.setBoxContent(index)} 
+                      onEnter={() => this.boxFocused(index)} onExit={() => this.boxLeave(index)}>
+                      <Text style={styles.boardSymbol}> {box !== null ? box : ''} </Text>
+                    </VrButton>
+                  )
+                })
+              }
+            </View>
           </View>
-        </View>
+        }
         
       </View>
     );
