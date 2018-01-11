@@ -5,6 +5,8 @@ import {
   Pano,
   Text,
   View,
+  Animated,
+  NativeModules,
   VrButton
 } from 'react-vr';
 import reactMixin from 'react-mixin';
@@ -20,8 +22,19 @@ export default class tictactoe_game extends React.Component {
       boxSelection: [null, null, null, null, null, null, null, null, null],
       currentPlayer: 'X',
       boxTimer: null,
-      boardDisplayed: true
+      boardDisplayed: true,
+      bounceValue: new Animated.Value(0),
     }
+  }
+
+  bounceItem = () => {
+    this.state.bounceValue.setValue(0);
+    Animated.spring(
+      this.state.bounceValue, {
+        toValue: 1,
+        friction: 3,
+      }
+    ).start();
   }
 
   boxFocused(index) {
@@ -69,12 +82,12 @@ export default class tictactoe_game extends React.Component {
     }
 
     if (this.state.boxSelection.allValuesSame()) {
+      this.bounceItem()
+      
       this.setState({
         message: "Player X WIN!",
         boardDisplayed: false
       })
-
-      console.log(`============="Player X WIN!`)
     }
     // Testing End
   }
@@ -109,6 +122,14 @@ export default class tictactoe_game extends React.Component {
     }
   }
 
+  resetGame() {
+    NativeModules.LinkingManager.openURL('http://kaskus.co.id')
+  }
+
+  componentDidMount() {
+    
+  }
+
   render() {
     const styles = {
       boardSymbol: {
@@ -122,6 +143,16 @@ export default class tictactoe_game extends React.Component {
         position: 'absolute',
         top: -1,
         left: '30%'
+      },
+
+      label: {
+        color: '#fff',
+        fontSize: 0.5
+      },
+
+      resetButton: {
+        backgroundColor: 'gold',
+        fontSize: 0.5
       },
 
       container: {
@@ -169,6 +200,20 @@ export default class tictactoe_game extends React.Component {
         width: 2,
         alignItems: 'center',
         justifyContent: 'center',
+      },
+
+      messageBoard: {
+        width: 8,
+        height: 4,
+        layoutOrigin: [0.5, 0.5],
+        transform: [
+          { translate: [-1, 0, -10] },
+          { scale: this.state.bounceValue }
+        ],
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'brown',
+        padding: 0.1,
       }
     }
 
@@ -192,6 +237,14 @@ export default class tictactoe_game extends React.Component {
             </View>
           </View>
         }
+
+        <Animated.View style={styles.messageBoard}>
+          <Text style={styles.label}>PLAYER X WIN</Text>
+
+          <VrButton  onClick={() => this.resetGame() }>
+            <Text style={styles.resetButton}>Play Again</Text>
+          </VrButton>
+        </Animated.View>
         
       </View>
     );
