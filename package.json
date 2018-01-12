@@ -10,6 +10,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "axios": "^0.17.1",
     "firebase": "^4.8.2",
     "ovrui": "~2.0.0",
     "react": "16.0.0",
