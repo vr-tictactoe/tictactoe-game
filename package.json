@@ -10,6 +10,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "firebase": "^4.8.2",
     "ovrui": "~2.0.0",
     "react": "16.0.0",
     "react-mixin": "^2.0.2",

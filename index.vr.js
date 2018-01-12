@@ -7,7 +7,9 @@ import {
   View,
   Animated,
   NativeModules,
-  VrButton
+  VrButton,
+  Model,
+  Box
 } from 'react-vr';
 import reactMixin from 'react-mixin';
 import TimerMixin from 'react-timer-mixin';
@@ -146,13 +148,18 @@ export default class tictactoe_game extends React.Component {
       },
 
       label: {
-        color: '#fff',
-        fontSize: 0.5
+        color: 'crimson',
+        fontSize: 0.5,
+        marginBottom: 0.2
       },
 
       resetButton: {
-        backgroundColor: 'gold',
-        fontSize: 0.5
+        backgroundColor: '#FFA000',
+        fontSize: 0.5,
+        paddingLeft: 0.1,
+        paddingRight: 0.1,
+        paddingTop: 0.1,
+        paddingBottom: 0.1
       },
 
       container: {
@@ -212,7 +219,7 @@ export default class tictactoe_game extends React.Component {
         ],
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'brown',
+        backgroundColor: '#FFECB3',
         padding: 0.1,
       }
     }
