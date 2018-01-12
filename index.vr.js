@@ -11,8 +11,6 @@ import {
   Model,
   Box
 } from 'react-vr';
-import reactMixin from 'react-mixin';
-import TimerMixin from 'react-timer-mixin';
 
 export default class tictactoe_game extends React.Component {
   constructor(props) {
