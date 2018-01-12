@@ -318,7 +318,7 @@ export default class tictactoe_game extends React.Component {
         <Pano source={asset('winter.jpg')}/>
         { 
          this.state.boardDisplayed && <View style={styles.container}>
-            <Text style={styles.title}>{this.state.message} {JSON.stringify(this.props)}</Text>
+            <Text style={styles.title}>{this.state.message}</Text>
             <View style={styles.board}>
               {
                 this.state.board.map((box, index) => {
