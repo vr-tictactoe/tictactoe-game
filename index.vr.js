@@ -158,7 +158,7 @@ export default class tictactoe_game extends React.Component {
           this.checkWinner(`${this.state.player1Name} (${this.state.player1Type}) Winner`)
 
           db.ref('games').child(this.state.gameId).update({
-            winner: snapshotGame.val().player1.name
+            winner: snapshotGame.val().player1.uid
           })
 
           this.setState({
@@ -170,7 +170,7 @@ export default class tictactoe_game extends React.Component {
           this.checkWinner(`${this.state.player2Name} (${this.state.player2Type}) Winner`)
 
           db.ref('games').child(this.state.gameId).update({
-            winner: snapshotGame.val().player2.name
+            winner: snapshotGame.val().player2.uid
           })
 
           this.setState({
@@ -182,6 +182,9 @@ export default class tictactoe_game extends React.Component {
           checkBoard[0].indexOf('XXX') === -1 &&
           checkBoard[0].indexOf('OOO') === -1) {
           this.checkWinner('DRAW')
+          db.ref('games').child(this.state.gameId).update({
+            winner: 'DRAW'
+          })          
 
           this.setState({
             board: ['', '', '', '', '', '', '', '', '']
@@ -223,7 +226,11 @@ export default class tictactoe_game extends React.Component {
       db.ref('games').child(gameId).on('value', snapshot => {
         if (snapshot.val() !== null) {
           if (snapshot.val().winner !== ''){
-            //
+            if(snapshot.val().winner === this.state.uid){
+              this.checkWinner(`${this.state.player.name} Win` )
+            }else{
+              this.checkWinner(`${this.state.player.name} Lose`)
+            }
           }
 
           if (snapshot.val().player2.uid === '') {
