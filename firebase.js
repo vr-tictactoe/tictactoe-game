@@ -1,6 +1,5 @@
 import { initializeApp } from 'firebase'
 
-
 const app = initializeApp({
   apiKey: "AIzaSyDWoKjb1rijTl9IVG6E0bqPUC7VE9qILzg",
   authDomain: "backup-vr-tictactoe.firebaseapp.com",
