@@ -126,7 +126,7 @@ export default class tictactoe_game extends React.Component {
   }
 
   resetGame() {
-    NativeModules.LinkingManager.openURL('http://localhost:3000/')
+    NativeModules.LinkingManager.openURL('http://vrtoe.septianfujianto.com/')
   }
 
   fillBoard(index) {
