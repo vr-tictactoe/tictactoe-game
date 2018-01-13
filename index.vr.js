@@ -35,6 +35,7 @@ export default class tictactoe_game extends React.Component {
       player2Type: '',
       player1Name: '',
       player2Name: '',
+      countDown: 'VS',
       boxTimer: null,
       boardDisplayed: true,
       gameOver: false,
@@ -44,6 +45,43 @@ export default class tictactoe_game extends React.Component {
       fadeAnim: new Animated.Value(0.1),
       alertBoardPositionY: new Animated.Value(-8),
     }
+  }
+
+  countDown(secs) {
+    console.log(`please choose your X in ${secs}`)
+
+    this.setState({
+      countDown: `please choose your X in ${secs}`
+    })
+
+    if (secs < 1) {
+      clearTimeout(timer)
+      return this.endOfTime()
+    }
+
+    secs--
+    var timer = setTimeout('countDown(' + secs + ')', 1000);
+
+  }
+
+  endOfTime() {
+    this.setState({
+      countDown: `Time's UP!!!`
+    })
+
+    this.randomBoard()
+  }
+
+  randomBoard() {
+    let blankArr = []
+    this.state.board.forEach((arr, index) => {
+      if (arr === '') {
+        blankArr.push(index)
+      }
+    })
+    
+    let indexBoard = Math.floor(Math.random() * temp.length + 1);
+    this.clickBoard(blankArr[indexBoard])
   }
 
   boxFocused(index) {
@@ -240,6 +278,8 @@ export default class tictactoe_game extends React.Component {
     if (gameId !== '') {
       db.ref('games').child(gameId).on('value', snapshot => {
         if (snapshot.val() !== null) {
+          this.countDown(15)
+
           if (snapshot.val().winner !== ''){
 
             if(snapshot.val().winner === this.state.uid){
@@ -426,7 +466,7 @@ export default class tictactoe_game extends React.Component {
 
          
           <VrButton>
-            <Text style={styles.labelVs}>VS</Text>
+            <Text style={styles.labelVs}>{this.state.countDown}</Text>
           </VrButton>
 
           <View style={styles.topItem}>
