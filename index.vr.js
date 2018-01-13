@@ -195,12 +195,22 @@ export default class tictactoe_game extends React.Component {
     }
   }
 
-  clickBoard(index) {    
-    db.ref('games').child(this.state.gameId).child('turn').once('value', checkTurn => {
-      console.log(checkTurn.val())
+  clickBoard(index) {   
+    console.log(`========================CLICKBOARD`)
+    console.log(JSON.stringify(this.state.player))
+    db.ref('games').child(this.state.gameId).once('value',checkPlayer => {
+      if(checkPlayer.val().player2.uid !== ''){
+        db.ref('games').child(this.state.gameId).child('turn').once('value', checkTurn => {
+          console.log(checkTurn.val())
 
-      if (checkTurn.val() === this.state.uid) {
-        this.fillBoard(index)
+          if (checkTurn.val() === this.state.uid) {
+            this.fillBoard(index)
+          }
+        })
+      }else{
+        this.setState({
+          message: 'Waiting second player'
+        })
       }
     })
   }
@@ -235,7 +245,7 @@ export default class tictactoe_game extends React.Component {
 
           if (snapshot.val().player2.uid === '') {
             this.setState({
-              message: 'Waiting for Player O'
+              message: 'Waiting for Second Player'
             })
           } else if(snapshot.val().turn === this.state.uid){
             this.setState({
@@ -243,7 +253,7 @@ export default class tictactoe_game extends React.Component {
             })
           } else{
             this.setState({
-              message: 'Wait Opponent Turn'
+              message: 'Waiting Opponent Turn'
             })
           }
 
@@ -281,7 +291,7 @@ export default class tictactoe_game extends React.Component {
       label: {
         color: 'crimson',
         fontSize: 0.5,
-        marginBottom: 0.2
+        marginBottom: 0.5
       },
 
       resetButton: {
@@ -290,7 +300,7 @@ export default class tictactoe_game extends React.Component {
         paddingLeft: 0.1,
         paddingRight: 0.1,
         paddingTop: 0.1,
-        paddingBottom: 0.1
+        paddingBottom: 0.1,
       },
 
       container: {
