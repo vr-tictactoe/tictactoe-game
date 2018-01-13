@@ -26,11 +26,17 @@ export default class tictactoe_game extends React.Component {
       player: [],
       type: '',
       games: [],
-      player1Avatar: 'astro.png',
-      player2Avatar: 'alien.png',
+      player1Avatar: '',
+      player2Avatar: '',
+      player1Type: '',
+      player2Type: '',
+      player1Name: '',
+      player2Name: '',
       boxTimer: null,
       boardDisplayed: true,
       gameOver: false,
+      gameOverMessage: '',
+      boardOpacity: 1,
       bounceValue: new Animated.Value(0),
       fadeAnim: new Animated.Value(0.1),
       alertBoardPositionY: new Animated.Value(-8),
@@ -79,9 +85,10 @@ export default class tictactoe_game extends React.Component {
     this.showGameoverBoard();
 
     this.setState({
-      message: message,
+      gameOverMessage: message,
       boardDisplayed: false,
-      gameOver: true
+      gameOver: true,
+      boardOpacity: 0
     })
   }
 
@@ -116,7 +123,7 @@ export default class tictactoe_game extends React.Component {
   }
 
   resetGame() {
-    NativeModules.LinkingManager.openURL('http://kaskus.co.id')
+    NativeModules.LinkingManager.openURL('http://localhost:3000/')
   }
 
   fillBoard(index) {
@@ -148,20 +155,24 @@ export default class tictactoe_game extends React.Component {
         ${this.state.board[1] + this.state.board[4] + this.state.board[7]}`]
 
         if (checkBoard[0].indexOf('XXX') !== -1) {
-          this.checkWinner('X Winner')
+          this.checkWinner(`${this.state.player1Name} (${this.state.player1Type}) Winner`)
+
           db.ref('games').child(this.state.gameId).update({
             winner: snapshotGame.val().player1.name
           })
+
           this.setState({
             board: ['', '', '', '', '', '', '', '', '']
           })
         }
 
         if (checkBoard[0].indexOf('OOO') !== -1) {
-          this.checkWinner('O Winner')
+          this.checkWinner(`${this.state.player2Name} (${this.state.player2Type}) Winner`)
+
           db.ref('games').child(this.state.gameId).update({
             winner: snapshotGame.val().player2.name
           })
+
           this.setState({
             board: ['', '', '', '', '', '', '', '', '']
           })
@@ -171,6 +182,7 @@ export default class tictactoe_game extends React.Component {
           checkBoard[0].indexOf('XXX') === -1 &&
           checkBoard[0].indexOf('OOO') === -1) {
           this.checkWinner('DRAW')
+
           this.setState({
             board: ['', '', '', '', '', '', '', '', '']
           })
@@ -210,6 +222,10 @@ export default class tictactoe_game extends React.Component {
     if (gameId !== '') {
       db.ref('games').child(gameId).on('value', snapshot => {
         if (snapshot.val() !== null) {
+          if (snapshot.val().winner !== ''){
+            //
+          }
+
           if (snapshot.val().player2.uid === '') {
             this.setState({
               message: 'Waiting for Player O'
@@ -226,7 +242,13 @@ export default class tictactoe_game extends React.Component {
 
           snapshot = snapshot.val()
           this.setState({
-            board: snapshot.board
+            board: snapshot.board,
+            player1Avatar: snapshot.player1.avatar,
+            player2Avatar: snapshot.player2.avatar,
+            player1Name: snapshot.player1.name,
+            player2Name: snapshot.player2.name,
+            player1Type: snapshot.player1.type,
+            player2Type: snapshot.player2.type,
           })
         }
       })
@@ -246,7 +268,7 @@ export default class tictactoe_game extends React.Component {
         position: 'absolute',
         top: -1,
         fontWeight: 'bold',
-        left: '30%'
+        left: '35%'
       },
 
       label: {
@@ -266,6 +288,7 @@ export default class tictactoe_game extends React.Component {
 
       container: {
         position: 'relative',
+        opacity: this.state.boardOpacity,
         layoutOrigin: [0.5, 0.5],
         transform: [{ translate: [-1, 3.5, -11] }],
         flex: 1,
@@ -343,7 +366,7 @@ export default class tictactoe_game extends React.Component {
 
       topItem: {
         width: 2,
-        height: 2.5,
+        height: 3,
         alignItems: 'center',
         justifyContent: 'center',
       },
@@ -355,7 +378,8 @@ export default class tictactoe_game extends React.Component {
       },
 
       labelTop: {
-        fontSize: 0.35,
+        textAlign: 'center',
+        fontSize: 0.3,
         color: 'crimson'
       }
     }
@@ -364,12 +388,10 @@ export default class tictactoe_game extends React.Component {
       <View>
         <Pano source={asset('winter.jpg')}/>
         <View style={styles.topArea}>
-        
-          {/* <Image style={styles.topItem} source={{uri: 'http://placeimg.com/500/500'}} /> */}
-         
+                 
           <View style={styles.topItem}>
             <Image style={styles.topItem} source={asset(this.state.player1Avatar)} />
-            <Text style={styles.labelTop}>You are X</Text>
+            <Text style={styles.labelTop}>{this.state.player1Name} - {this.state.player1Type}</Text>
           </View>
 
          
@@ -379,30 +401,28 @@ export default class tictactoe_game extends React.Component {
 
           <View style={styles.topItem}>
             <Image style={styles.topItem} source={asset(this.state.player2Avatar)} />
-            <Text style={styles.labelTop}>Opponent O</Text>
+            <Text style={styles.labelTop}>{this.state.player2Name} - {this.state.player2Type}</Text>
           </View>
         </View>
 
-        { 
-         this.state.boardDisplayed && <View style={styles.container}>
-            <Text style={styles.title}>{this.state.message}</Text>
-            <View style={styles.board}>
-              {
-                this.state.board.map((box, index) => {
-                  return (
-                    <VrButton key={index} style={this.setBoxContent(index)} 
-                      onEnter={() => this.boxFocused(index)} onExit={() => this.boxLeave(index)}>
-                      <Text style={styles.boardSymbol}> {box !== null ? box : ''} </Text>
-                    </VrButton>
-                  )
-                })
-              }
-            </View>
+        <View style={styles.container}>
+          <Text style={styles.title}>{this.state.message}</Text>
+          <View style={styles.board}>
+            {
+              this.state.board.map((box, index) => {
+                return (
+                  <VrButton key={index} style={this.setBoxContent(index)}
+                    onEnter={() => this.boxFocused(index)} onExit={() => this.boxLeave(index)}>
+                    <Text style={styles.boardSymbol}> {box !== null ? box : ''} </Text>
+                  </VrButton>
+                )
+              })
+            }
           </View>
-        }
+        </View>
 
         <Animated.View style={styles.messageBoard}>
-          <Text style={styles.label}>PLAYER X WIN</Text>
+          <Text style={styles.label}>{this.state.gameOverMessage}</Text>
 
           <VrButton onEnter={() => this.resetGame() }>
             <Text style={styles.resetButton}>Play Again</Text>
