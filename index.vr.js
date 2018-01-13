@@ -37,6 +37,21 @@ export default class tictactoe_game extends React.Component {
     this.setState({background: backgroundImage[hasil]})
   }
 
+  gameOver = (duration) => {
+    var timer = duration, seconds;
+    setInterval(() => {
+        seconds = parseInt(timer % 60, 10);
+
+        seconds = seconds < 10 ? "0" + seconds : seconds;
+
+        console.log('waktu akan habis dalam: ' + seconds )
+
+        if (--timer < 0) {
+            timer = duration;
+        }
+    }, 1000);
+}
+
   bounceItem = () => {
     this.state.bounceValue.setValue(0);
     Animated.spring(
@@ -142,6 +157,7 @@ export default class tictactoe_game extends React.Component {
 
   componentWillMount() {
     this.randomBackground()
+    this.gameOver(10)
   }
 
   render() {
