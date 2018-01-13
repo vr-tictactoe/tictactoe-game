@@ -34,7 +34,28 @@ export default class tictactoe_game extends React.Component {
       bounceValue: new Animated.Value(0),
       fadeAnim: new Animated.Value(0.1),
       alertBoardPositionY: new Animated.Value(-8),
+      timeout: null
     }
+  }
+
+
+  gameOver = (duration) => {
+    let { timeout } = this.state
+    var timer = duration, seconds;
+    
+    setInterval(() => {
+        seconds = parseInt(timer % 60, 10);
+
+        seconds = seconds < 10 ? "0" + seconds : seconds;
+
+        // console.log('waktu akan habis dalam: ' + seconds )
+        console.log('ini waktu', seconds)
+        this.setState({timeout: timer})
+        if (--timer < 0) {
+            timer = duration;
+            clearInterval(10)
+        }
+    }, 1000);
   }
 
   boxFocused(index) {
@@ -120,7 +141,7 @@ export default class tictactoe_game extends React.Component {
   }
 
   fillBoard(index) {
-
+    
     if (this.state.board[index] === '' || this.state.board[index] === null) {
       db.ref('games').child(this.state.gameId).once('value', snapshotGame => {
         if (snapshotGame.val().player1.uid === this.state.uid) {
@@ -195,6 +216,7 @@ export default class tictactoe_game extends React.Component {
     let splitString = queryString.split('&');
     let gameId = splitString[0].split('=')[1];
     let playerUID = splitString[1].split('=')[1]
+    this.gameOver(10)
 
     this.setState({
       gameId : gameId,
@@ -231,6 +253,10 @@ export default class tictactoe_game extends React.Component {
         }
       })
     }
+  }
+
+  componentWillMount() {
+    // this.gameOver(10)
   }
 
   render() {
@@ -370,6 +396,7 @@ export default class tictactoe_game extends React.Component {
           <View style={styles.topItem}>
             <Image style={styles.topItem} source={asset(this.state.player1Avatar)} />
             <Text style={styles.labelTop}>You are X</Text>
+            <Text style={styles.labelTop}>ini timeout {this.state.timeout}</Text>
           </View>
 
          
@@ -380,6 +407,7 @@ export default class tictactoe_game extends React.Component {
           <View style={styles.topItem}>
             <Image style={styles.topItem} source={asset(this.state.player2Avatar)} />
             <Text style={styles.labelTop}>Opponent O</Text>
+            <Text style={styles.labelTop}>ini timeout {this.state.timeout}</Text>
           </View>
         </View>
 
