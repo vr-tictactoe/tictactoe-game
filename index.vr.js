@@ -32,7 +32,7 @@ export default class tictactoe_game extends React.Component {
 
   randomBackground = () => {
     let { background } = this.state
-    let backgroundImage = ['Arizona.jpg', 'California.jpg','Texas.jpg']
+    let backgroundImage = ['Arizona.jpg', 'California.jpg','Texas.jpg', 'New Hampshire.jpg', 'winter.jpg']
     let hasil = Math.floor((Math.random() * backgroundImage.length - 1) + 1)
     this.setState({background: backgroundImage[hasil]})
   }
