@@ -11,6 +11,8 @@ import {
   Image
 } from 'react-vr';
 
+import axios from 'axios'
+
 import { db } from './firebase'
 
 export default class tictactoe_game extends React.Component {
@@ -26,6 +28,7 @@ export default class tictactoe_game extends React.Component {
       player: [],
       type: '',
       games: [],
+      winner: '',
       player1Avatar: '',
       player2Avatar: '',
       player1Type: '',
@@ -83,7 +86,7 @@ export default class tictactoe_game extends React.Component {
 
   checkWinner(message) {
     this.showGameoverBoard();
-
+    
     this.setState({
       gameOverMessage: message,
       boardDisplayed: false,
@@ -155,7 +158,7 @@ export default class tictactoe_game extends React.Component {
         ${this.state.board[1] + this.state.board[4] + this.state.board[7]}`]
 
         if (checkBoard[0].indexOf('XXX') !== -1) {
-          this.checkWinner(`${this.state.player1Name} (${this.state.player1Type}) Winner`)
+          this.checkWinner(`${this.state.player1Name} - (${this.state.player1Type}) Winner`)
 
           db.ref('games').child(this.state.gameId).update({
             winner: snapshotGame.val().player1.uid
@@ -167,7 +170,7 @@ export default class tictactoe_game extends React.Component {
         }
 
         if (checkBoard[0].indexOf('OOO') !== -1) {
-          this.checkWinner(`${this.state.player2Name} (${this.state.player2Type}) Winner`)
+          this.checkWinner(`${this.state.player2Name} - (${this.state.player2Type}) Winner`)
 
           db.ref('games').child(this.state.gameId).update({
             winner: snapshotGame.val().player2.uid
@@ -181,7 +184,9 @@ export default class tictactoe_game extends React.Component {
         if (this.state.board.indexOf('') === -1 &&
           checkBoard[0].indexOf('XXX') === -1 &&
           checkBoard[0].indexOf('OOO') === -1) {
-          this.checkWinner('DRAW')
+          
+          this.checkWinner('DRAW - Good Game')
+
           db.ref('games').child(this.state.gameId).update({
             winner: 'DRAW'
           })          
@@ -236,8 +241,16 @@ export default class tictactoe_game extends React.Component {
       db.ref('games').child(gameId).on('value', snapshot => {
         if (snapshot.val() !== null) {
           if (snapshot.val().winner !== ''){
+
             if(snapshot.val().winner === this.state.uid){
               this.checkWinner(`${this.state.player.name} Win` )
+              axios.post('https://us-central1-vtitu-191706.cloudfunctions.net/createHistory', {
+                gameId: this.state.gameId,
+                player1: this.state.player1Name,
+                player2: this.state.player2Name,
+                winner: this.state.player.name,
+              })
+
             }else{
               this.checkWinner(`${this.state.player.name} Lose`)
             }
@@ -291,7 +304,7 @@ export default class tictactoe_game extends React.Component {
       label: {
         color: 'crimson',
         fontSize: 0.5,
-        marginBottom: 0.5
+        marginBottom: 0.7
       },
 
       resetButton: {
