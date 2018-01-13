@@ -8,8 +8,7 @@ import {
   Animated,
   NativeModules,
   VrButton,
-  Model,
-  Box
+  Image
 } from 'react-vr';
 
 import { db } from './firebase'
@@ -19,30 +18,23 @@ export default class tictactoe_game extends React.Component {
     super(props)
 
     this.state = {
-      message: 'Player X Turn',
+      message: '',
       boxFocus: [false, false, false, false, false, false, false, false, false],
       board: ['', '', '', '', '', '', '', '', ''],
-      currentPlayer: 'X',
       uid: '',
       gameId: '',
       player: [],
       type: '',
       games: [],
-
+      player1Avatar: 'astro.png',
+      player2Avatar: 'alien.png',
       boxTimer: null,
       boardDisplayed: true,
+      gameOver: false,
       bounceValue: new Animated.Value(0),
+      fadeAnim: new Animated.Value(0.1),
+      alertBoardPositionY: new Animated.Value(-8),
     }
-  }
-
-  bounceItem = () => {
-    this.state.bounceValue.setValue(0);
-    Animated.spring(
-      this.state.bounceValue, {
-        toValue: 1,
-        friction: 3,
-      }
-    ).start();
   }
 
   boxFocused(index) {
@@ -50,18 +42,10 @@ export default class tictactoe_game extends React.Component {
     itemFocus[index] = true
 
     let timerFocused = setTimeout(() => {
-      /* const itemSelected = this.state.board
-      itemSelected[index] = this.state.currentPlayer */
-
       this.clickBoard(index)
-
-      this.setState({ 
-        message: `Box ${index} selected`, 
-      })
     }, 2000); 
 
     this.setState({ 
-      message: `Box ${index} focused`, 
       boxFocus: itemFocus,
       boxTimer: timerFocused
     })    
@@ -77,13 +61,27 @@ export default class tictactoe_game extends React.Component {
     })
   }
 
+  showGameoverBoard() {
+    console.log(`========== SHOW GAMEOVER BOARD`)
+
+    Animated.timing(
+      this.state.fadeAnim,
+      { toValue: 1 }
+    ).start();
+
+    Animated.timing(
+      this.state.alertBoardPositionY,
+      { toValue: 10 }
+    ).start();
+  }
+
   checkWinner(message) {
-    // this.bounceItem()
-    console.log(`=======================WINNNER ${message}`)
+    this.showGameoverBoard();
 
     this.setState({
       message: message,
-      boardDisplayed: false
+      boardDisplayed: false,
+      gameOver: true
     })
   }
 
@@ -212,6 +210,20 @@ export default class tictactoe_game extends React.Component {
     if (gameId !== '') {
       db.ref('games').child(gameId).on('value', snapshot => {
         if (snapshot.val() !== null) {
+          if (snapshot.val().player2.uid === '') {
+            this.setState({
+              message: 'Waiting for Player O'
+            })
+          } else if(snapshot.val().turn === this.state.uid){
+            this.setState({
+              message: 'Your Turn'
+            })
+          } else{
+            this.setState({
+              message: 'Wait Opponent Turn'
+            })
+          }
+
           snapshot = snapshot.val()
           this.setState({
             board: snapshot.board
@@ -233,6 +245,7 @@ export default class tictactoe_game extends React.Component {
         fontSize: 0.5,
         position: 'absolute',
         top: -1,
+        fontWeight: 'bold',
         left: '30%'
       },
 
@@ -254,9 +267,9 @@ export default class tictactoe_game extends React.Component {
       container: {
         position: 'relative',
         layoutOrigin: [0.5, 0.5],
-        transform: [{ translate: [-1, 0.5, -9] }],
+        transform: [{ translate: [-1, 3.5, -11] }],
         flex: 1,
-        backgroundColor: '#ccc',
+        backgroundColor: 'rgba(221,221,221, 0.6)',
         alignItems: 'center',
         justifyContent: 'flex-start',
         height: 'auto'
@@ -302,20 +315,74 @@ export default class tictactoe_game extends React.Component {
         width: 8,
         height: 4,
         layoutOrigin: [0.5, 0.5],
+        opacity: this.state.fadeAnim,
         transform: [
-          { translate: [-1, 0, -10] },
+          { translate: [-1, this.state.alertBoardPositionY, -10] },
           { scale: 1.5 }
         ],
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#FFECB3',
+        backgroundColor: 'rgba(221,221,221, 0.6)',
         padding: 0.1,
+      },
+
+      topArea: {
+        width: 12,
+        height: 4,
+        layoutOrigin: [0, 0],
+        transform: [
+          { translate: [-7, 7.7, -10] },
+        ],
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(221,221,221, 0.6)',
+        padding: 0.1,
+      },
+
+      topItem: {
+        width: 2,
+        height: 2.5,
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+
+      labelVs: {
+        fontSize: 0.5,
+        margin: 1,
+        fontStyle: 'italic'
+      },
+
+      labelTop: {
+        fontSize: 0.35,
+        color: 'crimson'
       }
     }
     
     return (
       <View>
         <Pano source={asset('winter.jpg')}/>
+        <View style={styles.topArea}>
+        
+          {/* <Image style={styles.topItem} source={{uri: 'http://placeimg.com/500/500'}} /> */}
+         
+          <View style={styles.topItem}>
+            <Image style={styles.topItem} source={asset(this.state.player1Avatar)} />
+            <Text style={styles.labelTop}>You are X</Text>
+          </View>
+
+         
+          <VrButton>
+            <Text style={styles.labelVs}>VS</Text>
+          </VrButton>
+
+          <View style={styles.topItem}>
+            <Image style={styles.topItem} source={asset(this.state.player2Avatar)} />
+            <Text style={styles.labelTop}>Opponent O</Text>
+          </View>
+        </View>
+
         { 
          this.state.boardDisplayed && <View style={styles.container}>
             <Text style={styles.title}>{this.state.message}</Text>
