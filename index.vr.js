@@ -43,7 +43,49 @@ export default class tictactoe_game extends React.Component {
       bounceValue: new Animated.Value(0),
       fadeAnim: new Animated.Value(0.1),
       alertBoardPositionY: new Animated.Value(-8),
+      timeout: null
     }
+  }
+
+  gameOver = (duration) => {
+    let { timeout } = this.state
+    var timer = duration, seconds;
+
+    setInterval(() => {
+      seconds = parseInt(timer % 60, 10);
+
+      seconds = seconds < 10 ? "0" + seconds : seconds;
+
+      // console.log('waktu akan habis dalam: ' + seconds )
+      console.log('ini waktu', seconds)
+      this.setState({ timeout: timer })
+
+      if (--timer < 0) {
+        timer = duration;
+        clearInterval(10)
+        return  this.endOfTime()
+      }
+    }, 1000);
+  }
+
+  endOfTime() {
+    this.setState({
+      timeout: `Time's UP!!!`
+    })
+
+    this.randomBoard()
+  }
+
+  randomBoard() {
+    let blankArr = []
+    this.state.board.forEach((arr, index) => {
+      if (arr === '') {
+        blankArr.push(index)
+      }
+    })
+
+    let indexBoard = Math.floor(Math.random() * blankArr.length + 1);
+    this.clickBoard(blankArr[indexBoard])
   }
 
   boxFocused(index) {
@@ -130,7 +172,6 @@ export default class tictactoe_game extends React.Component {
   }
 
   fillBoard(index) {
-
     if (this.state.board[index] === '' || this.state.board[index] === null) {
       db.ref('games').child(this.state.gameId).once('value', snapshotGame => {
         if (snapshotGame.val().player1.uid === this.state.uid) {
@@ -201,6 +242,7 @@ export default class tictactoe_game extends React.Component {
   }
 
   clickBoard(index) {   
+    clearInterval(10)
     console.log(`========================CLICKBOARD`)
     console.log(JSON.stringify(this.state.player))
     db.ref('games').child(this.state.gameId).once('value',checkPlayer => {
@@ -220,12 +262,26 @@ export default class tictactoe_game extends React.Component {
     })
   }
 
+  componentDidUpdate() {
+    // this.gameOver(10)
+    db.ref('games').child(this.state.gameId).on('value', snapshot => {
+      if (snapshot.val() !== null) {
+        if (snapshot.val().turn === this.state.uid) {
+          this.gameOver(10)
+          this.setState({
+            message: 'Your Turn'
+          })
+        }
+      }  
+    })      
+  }
+
+
   componentDidMount() {
     let queryString = NativeModules.Location.search;
     let splitString = queryString.split('&');
     let gameId = splitString[0].split('=')[1];
     let playerUID = splitString[1].split('=')[1]
-
     this.setState({
       gameId : gameId,
       uid: playerUID
@@ -241,7 +297,7 @@ export default class tictactoe_game extends React.Component {
       db.ref('games').child(gameId).on('value', snapshot => {
         if (snapshot.val() !== null) {
           if (snapshot.val().winner !== ''){
-
+            
             if(snapshot.val().winner === this.state.uid){
               this.checkWinner(`${this.state.player.name} Win` )
               axios.post('https://us-central1-vtitu-191706.cloudfunctions.net/createHistory', {
@@ -261,6 +317,7 @@ export default class tictactoe_game extends React.Component {
               message: 'Waiting for Second Player'
             })
           } else if(snapshot.val().turn === this.state.uid){
+            this.gameOver(10)
             this.setState({
               message: 'Your Turn'
             })
@@ -426,7 +483,7 @@ export default class tictactoe_game extends React.Component {
 
          
           <VrButton>
-            <Text style={styles.labelVs}>VS</Text>
+            <Text style={styles.labelVs}>{this.state.timeout}</Text>
           </VrButton>
 
           <View style={styles.topItem}>
