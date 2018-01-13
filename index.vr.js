@@ -26,7 +26,15 @@ export default class tictactoe_game extends React.Component {
       boxTimer: null,
       boardDisplayed: true,
       bounceValue: new Animated.Value(0),
+      background: ''
     }
+  }
+
+  randomBackground = () => {
+    let { background } = this.state
+    let backgroundImage = ['Arizona.jpg', 'California.jpg','Texas.jpg']
+    let hasil = Math.floor((Math.random() * backgroundImage.length - 1) + 1)
+    this.setState({background: backgroundImage[hasil]})
   }
 
   bounceItem = () => {
@@ -132,6 +140,10 @@ export default class tictactoe_game extends React.Component {
     
   }
 
+  componentWillMount() {
+    this.randomBackground()
+  }
+
   render() {
     const styles = {
       boardSymbol: {
@@ -226,7 +238,7 @@ export default class tictactoe_game extends React.Component {
 
     return (
       <View>
-        <Pano source={asset('winter.jpg')}/>
+        <Pano source={asset(this.state.background)}/>
         { 
          this.state.boardDisplayed && <View style={styles.container}>
             <Text style={styles.title}>{this.state.message}</Text>
