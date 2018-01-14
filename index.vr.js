@@ -98,7 +98,8 @@ export default class tictactoe_game extends React.Component {
   setBoxContent(index) {
     if (this.state.boxFocus[index]) {
       return {
-        backgroundColor: 'rgba(237, 20, 61, 0.4117647058823529)',
+        backgroundColor: 'rgba(39, 155, 255, 1)',
+        borderRadius: 0.1,
         margin: 0.1,
         height: 2,
         width: 2,
@@ -107,9 +108,13 @@ export default class tictactoe_game extends React.Component {
       }
     } else {
       return { 
-        backgroundColor: 'gold', 
-        margin: 0.1, height: 2, width: 2, 
-        alignItems: 'center', justifyContent: 'center', 
+        backgroundColor: 'rgba(123, 213, 222, 0.75)', 
+        borderRadius: 0.1,
+        margin: 0.1, 
+        height: 2, 
+        width: 2, 
+        alignItems: 'center', 
+        justifyContent: 'center', 
       }
     }
 
@@ -295,10 +300,8 @@ export default class tictactoe_game extends React.Component {
 
       title: {
         fontSize: 0.5,
-        position: 'absolute',
-        top: -1,
         fontWeight: 'bold',
-        left: '35%'
+        textAlign: 'center',
       },
 
       label: {
@@ -320,12 +323,12 @@ export default class tictactoe_game extends React.Component {
         position: 'relative',
         opacity: this.state.boardOpacity,
         layoutOrigin: [0.5, 0.5],
-        transform: [{ translate: [-1, 3.5, -11] }],
+        transform: [{ translate: [0, 3.5, -11] }],
         flex: 1,
-        backgroundColor: 'rgba(221,221,221, 0.6)',
         alignItems: 'center',
-        justifyContent: 'flex-start',
-        height: 'auto'
+        justifyContent: 'center',
+        height: 'auto',
+        flexDirection: 'row',
       },
 
       board: {
@@ -381,21 +384,20 @@ export default class tictactoe_game extends React.Component {
 
       topArea: {
         width: 12,
-        height: 4,
+        height: 3.5,
         layoutOrigin: [0, 0],
         transform: [
-          { translate: [-7, 7.7, -10] },
+          { translate: [-6, 7.7, -10] },
         ],
         flexDirection: 'row',
         flexWrap: 'wrap',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'rgba(221,221,221, 0.6)',
         padding: 0.1,
       },
 
-      topItem: {
-        width: 2,
+      avatarItem: {
+        width: 2.3,
         height: 3,
         alignItems: 'center',
         justifyContent: 'center',
@@ -408,9 +410,33 @@ export default class tictactoe_game extends React.Component {
       },
 
       labelTop: {
+        marginTop: 0.2,
+        backgroundColor: 'rgba(39, 155, 255, 0.5)',
+        padding: 0.1,
+        borderRadius: 0.2,
         textAlign: 'center',
         fontSize: 0.3,
-        color: 'crimson'
+        color: '#fff'
+      },
+
+      sideItem: {
+        height: '100%',        
+        width: 1,
+        resizeMode: 'contain',
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+
+      sideArea: {
+        flex: 1,
+        alignItems: 'center',
+        height: 'auto',
+        flexDirection: 'row',  
+      },
+
+      playerSide: {
+        width: 3.5, 
+        alignItems: 'center'
       }
     }
     
@@ -419,7 +445,7 @@ export default class tictactoe_game extends React.Component {
         <Pano source={asset('winter.jpg')}/>
         <View style={styles.topArea}>
                  
-          <View style={styles.topItem}>
+          {/* <View style={styles.topItem}>
             <Image style={styles.topItem} source={asset(this.state.player1Avatar)} />
             <Text style={styles.labelTop}>{this.state.player1Name} - {this.state.player1Type}</Text>
           </View>
@@ -432,22 +458,41 @@ export default class tictactoe_game extends React.Component {
           <View style={styles.topItem}>
             <Image style={styles.topItem} source={asset(this.state.player2Avatar)} />
             <Text style={styles.labelTop}>{this.state.player2Name} - {this.state.player2Type}</Text>
-          </View>
+          </View> */}
         </View>
 
         <View style={styles.container}>
-          <Text style={styles.title}>{this.state.message}</Text>
-          <View style={styles.board}>
-            {
-              this.state.board.map((box, index) => {
-                return (
-                  <VrButton key={index} style={this.setBoxContent(index)}
-                    onEnter={() => this.boxFocused(index)} onExit={() => this.boxLeave(index)}>
-                    <Text style={styles.boardSymbol}> {box !== null ? box : ''} </Text>
-                  </VrButton>
-                )
-              })
-            }
+          <View style={styles.sideArea}>
+            <View style={styles.playerSide}>
+              <Image style={styles.avatarItem} source={asset(this.state.player1Avatar)} />
+              {/* <Image style={styles.avatarItem} source={asset('alien.png')} /> */}
+              <Text style={styles.labelTop}>{this.state.player1Name} - {this.state.player1Type}</Text>
+            </View>
+            <Image style={styles.sideItem} source={asset('left.png')} />          
+          </View>
+          <View>
+            <Text style={styles.title}>{this.state.message}</Text>
+            <View style={styles.board}>
+              {
+                this.state.board.map((box, index) => {
+                  return (
+                    <VrButton key={index} style={this.setBoxContent(index)}
+                      onEnter={() => this.boxFocused(index)} onExit={() => this.boxLeave(index)}>
+                      <Text style={styles.boardSymbol}> {box !== null ? box : ''} </Text>
+                    </VrButton>
+                  )
+                })
+              }
+            </View>
+            <Text style={styles.title}>ROOM NAME</Text>
+          </View>
+          <View style={styles.sideArea}>
+            <Image style={styles.sideItem} source={asset('right.png')} />                    
+            <View style={styles.playerSide}>
+              <Image style={styles.avatarItem} source={asset(this.state.player2Avatar)} />
+              {/* <Image style={styles.avatarItem} source={asset('alien.png')} /> */}
+              <Text style={styles.labelTop}>{this.state.player2Name} - {this.state.player2Type}</Text>
+            </View>
           </View>
         </View>
 
