@@ -40,6 +40,7 @@ export default class tictactoe_game extends React.Component {
       gameOver: false,
       gameOverMessage: '',
       boardOpacity: 1,
+      timeout: 0,
       bounceValue: new Animated.Value(0),
       fadeAnim: new Animated.Value(0.1),
       alertBoardPositionY: new Animated.Value(-8),
@@ -130,6 +131,83 @@ export default class tictactoe_game extends React.Component {
     }
   }
 
+  countDown(secs) {
+    console.log(`please choose your X in ${secs}`)
+
+    this.setState({
+      countDown: `please choose your X in ${secs}`
+    })
+
+    if (secs < 1) {
+      clearTimeout(timer)
+      return this.endOfTime()
+    }
+
+    secs--
+    console.log(secs)
+    var timer = setTimeout('countDown(' + secs + ')', 1000);
+
+  }
+
+  endOfTime() {
+    this.setState({
+      countDown: `Time's UP!!!`
+    })                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+
+    this.randomBoard()
+  }
+
+  randomBoard() {
+    let blankArr = []
+    this.state.board.forEach((arr, index) => {
+      if (arr === '') {
+        blankArr.push(index)
+      }
+    })
+    
+    let indexBoard = Math.floor(Math.random() * temp.length + 1);
+    this.clickBoard(blankArr[indexBoard])
+  }
+
+  gameInterval(duration) {
+   let { timeout } = this.state
+   console.log(duration)
+   var timer = duration, seconds;
+   
+   var timeInterval = setInterval(() => {
+     seconds = parseInt(timer % 60, 10);
+     seconds = seconds < 10 ? 0 + seconds : seconds;
+
+       // console.log('waktu akan habis dalam: ' + seconds )
+        this.setState({
+          message: `Time remaining ${seconds}`
+        })
+
+       this.setState({timeout: timer})
+       if (--timer < 0) {
+         timer = duration;
+         clearInterval(10)
+         this.randomBoard()
+       }
+     }, 1000);
+   this.setState({
+    timeInterval : timeInterval
+   })
+ }
+
+
+ randomBoard() {
+   let blankArr = []
+   this.state.board.forEach((arr,index) => {
+    if(arr === ''){
+      blankArr.push(index)
+    }
+  })
+   let randomBoard = Math.floor(Math.random() * blankArr.length);
+   console.log(blankArr,randomBoard)
+   this.clickBoard(blankArr[randomBoard])
+ }
+
   resetGame() {
     setTimeout(() => {
       NativeModules.LinkingManager.openURL('http://localhost:3000/')
@@ -217,7 +295,7 @@ export default class tictactoe_game extends React.Component {
   }
 
   clickBoard(index) {   
-    console.log(`========================CLICKBOARD`)
+    console.log(`========================CLICKBOARD`,index)
     console.log(JSON.stringify(this.state.player))
     db.ref('games').child(this.state.gameId).once('value',checkPlayer => {
       if(checkPlayer.val().player2.uid !== ''){
@@ -237,6 +315,7 @@ export default class tictactoe_game extends React.Component {
   }
 
   componentDidMount() {
+    this.countDown(15)
     let queryString = NativeModules.Location.search;
     let splitString = queryString.split('&');
     let gameId = splitString[0].split('=')[1];
@@ -277,10 +356,12 @@ export default class tictactoe_game extends React.Component {
               message: 'Waiting for Second Player'
             })
           } else if(snapshot.val().turn === this.state.uid){
+            this.gameInterval(10)
             this.setState({
               message: 'Your Turn'
             })
           } else{
+            clearInterval(this.state.timeInterval)
             this.setState({
               message: 'Waiting Opponent Turn'
             })
