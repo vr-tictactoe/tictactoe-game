@@ -128,7 +128,7 @@ export default class tictactoe_game extends React.Component {
   resetGame() {
     setTimeout(() => {
       NativeModules.LinkingManager.openURL('http://localhost:3000/')
-    }, 2000); 
+    }, 1500); 
   }
 
   fillBoard(index) {
@@ -202,12 +202,14 @@ export default class tictactoe_game extends React.Component {
     }
   }
 
-  setBoardPieceContent(board) {
+  setBoardPieceContent(index, board) {
     let symbol = board
 
-    return (
-      <Image style={{ width: 1, height: 1 }} source={asset(`${board}.png`)} />
-    )
+    if (this.state.board[index] !== '') {
+      return (
+        <Image style={{ width: 1, height: 1 }} source={asset(`${board}.png`)} />
+      )
+    }
   }
 
   clickBoard(index) {   
@@ -454,7 +456,7 @@ export default class tictactoe_game extends React.Component {
                   <VrButton key={index} style={this.setBoxContent(index)}
                     onEnter={() => this.boxFocused(index)} onExit={() => this.boxLeave(index)}>
                     {/* <Text style={{ fontSize: 0.4 }}> {box !== null ? box : ''} </Text> */}
-                    { this.setBoardPieceContent(box) }
+                    { this.setBoardPieceContent(index, box) }
                   </VrButton>
                 )
               })
