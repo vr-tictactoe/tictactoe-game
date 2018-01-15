@@ -175,7 +175,7 @@ export default class tictactoe_game extends React.Component {
 
   resetGame() {
     setTimeout(() => {
-      NativeModules.LinkingManager.openURL('http://vrtoe.septianfujianto.com')
+      NativeModules.LinkingManager.openURL('https://backup-vr-tictactoe.firebaseapp.com')
     }, 1500);
   }
 
