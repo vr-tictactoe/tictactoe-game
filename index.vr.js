@@ -375,6 +375,14 @@ export default class tictactoe_game extends React.Component {
     }
   }
 
+  setPlayer1Ready() {
+    console.log(`PLAYER 1`)
+  }
+
+  setPlayer2Ready() {
+    console.log(`PLAYER 2`)
+  }
+
   render() {
     const styles = {
       boardSymbol: {
@@ -475,12 +483,12 @@ export default class tictactoe_game extends React.Component {
       },
 
       topArea: {
-        width: 12,
-        height: 3.5,
-        layoutOrigin: [0, 0],
-        transform: [
-          { translate: [-6, 7.7, -10] },
-        ],
+        width: 8,
+        height: 2,
+        // backgroundColor: 'crimson',
+        position: 'absolute',
+        top: -2,
+        left: 0,
         flexDirection: 'row',
         flexWrap: 'wrap',
         alignItems: 'center',
@@ -545,12 +553,19 @@ export default class tictactoe_game extends React.Component {
                 :
                 <Text></Text>
               }
+
+              <VrButton onEnter={() => this.setPlayer1Ready() } style={{ backgroundColor: 'crimson', padding: 0.1, marginTop: 0.5 }}>
+                <Text style={{ fontColor: '#fff', fontSize: 0.5 }}>Ready</Text>
+              </VrButton>  
             </View>
-            <Image style={styles.sideItem} source={asset('left.png')} />          
+            <Image style={styles.sideItem} source={asset('left.png')} />        
           </View>
 
           <View>
-            <Text style={styles.title}>{this.state.message}</Text>
+            <View style={styles.topArea}>
+              <Text style={styles.title}>{this.state.message}</Text>
+            </View> 
+            
             <View style={styles.board}>
               {
                 this.state.board.map((box, index) => {
@@ -574,6 +589,10 @@ export default class tictactoe_game extends React.Component {
                 : 
                 <Text></Text>
               }
+
+              <VrButton onEnter={() => this.setPlayer2Ready()} style={{ backgroundColor: 'crimson', padding: 0.1, marginTop: 0.5 }}>
+                <Text style={{ fontColor: '#fff', fontSize: 0.5 }}>Ready</Text>
+              </VrButton> 
             </View>
           </View>
         </View>
