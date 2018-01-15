@@ -344,7 +344,7 @@ export default class tictactoe_game extends React.Component {
             this.setState({
               message: 'Your Turn'
             })
-          } else{
+          } else {
             clearInterval(this.state.timeInterval)
             this.setState({
               message: 'Waiting Opponent Turn'
