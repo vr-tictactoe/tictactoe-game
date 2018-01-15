@@ -48,7 +48,8 @@ export default class tictactoe_game extends React.Component {
       timerMessage: '',
       background: '',
       backgroundColor: '',
-      colorSelected: ''
+      colorSelected: '',
+      avatarColor: ''
     }
   }
 
@@ -69,13 +70,15 @@ export default class tictactoe_game extends React.Component {
   randomBackground = () => {
     let { background, backgroundColor } = this.state
     let backgroundImage = ['Arizona.jpg', 'Texas.jpg', 'New Hampshire.jpg', 'winter.jpg']
-    let colorBackground = ['rgba(244, 175, 65, 0.68)', 'rgba(104, 219, 17, 0.68)', 'rgba(26, 163, 168, 0.68)', 'rgba(123, 213, 222, 0.68)' ]
+    let colorBackground = ['rgba(244, 175, 65, 0.66)', 'rgba(104, 219, 17, 0.66)', 'rgba(26, 163, 168, 0.66)', 'rgba(123, 213, 222, 0.66)' ]
     let selectColour =  ['rgba(214, 116, 42, 0.7)', 'rgba(68, 155, 4, 0.7)', 'rgba(9, 86, 89, 0.7)', 'rgba(39, 155, 255, 0.7)']
+    let avatarBackground = ['rgba(244, 175, 65, 0.5)', 'rgba(104, 219, 17, 0.5)', 'rgba(26, 163, 168, 0.5)', 'rgba(123, 213, 222, 0.5)' ]
     let hasil = Math.floor((Math.random() * backgroundImage.length - 1) + 1)
     this.setState({
       background: backgroundImage[hasil],
       backgroundColor: colorBackground[hasil],
-      colorSelected: selectColour[hasil]
+      colorSelected: selectColour[hasil],
+      avatarColor: avatarBackground[hasil]
     })
   }
 
@@ -491,7 +494,7 @@ export default class tictactoe_game extends React.Component {
 
       labelTop: {
         marginTop: 0.2,
-        backgroundColor: 'rgba(39, 155, 255, 0.5)',
+        backgroundColor: this.state.avatarColor,
         padding: 0.1,
         borderRadius: 0.2,
         textAlign: 'center',
