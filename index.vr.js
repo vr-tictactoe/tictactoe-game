@@ -69,7 +69,7 @@ export default class tictactoe_game extends React.Component {
   randomBackground = () => {
     let { background, backgroundColor } = this.state
     let backgroundImage = ['Arizona.jpg', 'Texas.jpg', 'New Hampshire.jpg', 'winter.jpg']
-    let colorBackground = ['rgba(244, 175, 65, 0.75)', 'rgba(104, 219, 17, 0.75)', 'rgba(26, 163, 168, 0.75)', 'rgba(123, 213, 222, 0.75)' ]
+    let colorBackground = ['rgba(244, 175, 65, 0.68)', 'rgba(104, 219, 17, 0.68)', 'rgba(26, 163, 168, 0.68)', 'rgba(123, 213, 222, 0.68)' ]
     let selectColour =  ['rgba(214, 116, 42, 0.7)', 'rgba(68, 155, 4, 0.7)', 'rgba(9, 86, 89, 0.7)', 'rgba(39, 155, 255, 0.7)']
     let hasil = Math.floor((Math.random() * backgroundImage.length - 1) + 1)
     this.setState({
@@ -298,6 +298,7 @@ export default class tictactoe_game extends React.Component {
     let splitString = queryString.split('&');
     let gameId = splitString[0].split('=')[1];
     let playerUID = splitString[1].split('=')[1]
+    this.randomBackground()
 
     this.setState({
       gameId : gameId,
@@ -366,7 +367,7 @@ export default class tictactoe_game extends React.Component {
   }
 
   componentWillMount() {
-    this.randomBackground()
+    
   }
 
   render() {
