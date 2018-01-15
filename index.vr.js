@@ -35,17 +35,21 @@ export default class tictactoe_game extends React.Component {
       player2Type: '',
       player1Name: '',
       player2Name: '',
+      player1Status: 'Not Ready',
+      player2Status: 'Not Ready',
       boxTimer: null,
       boardDisplayed: true,
       gameOver: false,
       gameOverMessage: '',
       boardOpacity: 1,
       timeout: 0,
+      gameCountingTime: 0,
       bounceValue: new Animated.Value(0),
       fadeAnim: new Animated.Value(0.1),
       alertBoardPositionY: new Animated.Value(-8),
       timerMessage: '',
       winning: '',
+      gameStatus: ''
     }
   }
 
@@ -133,6 +137,39 @@ export default class tictactoe_game extends React.Component {
     }
   }
 
+  startTheGame() {    
+    console.log('start game nya ')
+    db.ref('games').child(this.state.gameId).update({
+      gameStatus: 'Ready',
+    })    
+  }
+
+  gameCountDown(duration) {
+     let { gameCountingTime } = this.state
+     var timer = duration, seconds;
+     var countdownInterval = setInterval(() => {
+       seconds = parseInt(timer % 60, 10);
+       seconds = seconds < 10 ? 0 + seconds : seconds;
+
+         // console.log('waktu akan habis dalam: ' + seconds )
+          this.setState({
+            message: `Please Wait`,
+            timerMessage: `Game will Start in ${seconds}`
+          })
+
+         this.setState({gameCountingTime: timer})
+
+         if (--timer < 0) {
+           gameCountingTime = duration;
+           clearInterval(10)
+           this.startTheGame()
+         }
+       }, 1000);
+     this.setState({
+      countdownInterval : countdownInterval
+     })    
+  }
+
   gameInterval(duration) {
    let { timeout } = this.state
    console.log(duration)
@@ -148,10 +185,10 @@ export default class tictactoe_game extends React.Component {
         })
 
        this.setState({timeout: timer})
-
+       console.log(timer)
        if (--timer < 0) {
          timer = duration;
-         clearInterval(10)
+         clearInterval(15)
          this.randomBoard()
        }
      }, 1000);
@@ -261,17 +298,13 @@ export default class tictactoe_game extends React.Component {
     console.log(`========================CLICKBOARD`,index)
     console.log(JSON.stringify(this.state.player))
     db.ref('games').child(this.state.gameId).once('value',checkPlayer => {
-      if(checkPlayer.val().player2.uid !== ''){
+      if(checkPlayer.val().player2.uid !== '' && checkPlayer.val().gameStatus === 'Ready'){
         db.ref('games').child(this.state.gameId).child('turn').once('value', checkTurn => {
           console.log(checkTurn.val())
 
           if (checkTurn.val() === this.state.uid) {
             this.fillBoard(index)
           }
-        })
-      }else{
-        this.setState({
-          message: 'Waiting second player'
         })
       }
     })
@@ -282,11 +315,11 @@ export default class tictactoe_game extends React.Component {
     let splitString = queryString.split('&');
     let gameId = splitString[0].split('=')[1];
     let playerUID = splitString[1].split('=')[1]
-
     this.setState({
       gameId : gameId,
       uid: playerUID
     })
+
 
     db.ref('users').orderByChild('uid').equalTo(playerUID).once('value', snaphotUser => {
       snaphotUser.forEach(snapUser => {
@@ -297,6 +330,11 @@ export default class tictactoe_game extends React.Component {
     if (gameId !== '') {
       db.ref('games').child(gameId).on('value', snapshot => {
         if (snapshot.val() !== null) {
+          if(snapshot.val().player1.status === 'Ready' && snapshot.val().player2.status === 'Ready'
+             && snapshot.val().gameStatus !== 'Ready'){
+            this.gameCountDown(10)
+          }
+
           if (snapshot.val().winner !== ''){
 
             if(snapshot.val().winner === this.state.uid){
@@ -321,8 +359,13 @@ export default class tictactoe_game extends React.Component {
             this.setState({
               message: 'Waiting for Second Player'
             })
-          } else if(snapshot.val().turn === this.state.uid){
-            this.gameInterval(10)
+          }else if(snapshot.val().player2.uid !== '' && snapshot.val().gameStatus !== 'Ready'){
+            this.setState({
+              message: 'If you Ready Focus Box below your Avatar '
+            })
+          }else if(snapshot.val().turn === this.state.uid && snapshot.val().gameStatus === 'Ready'){
+            clearInterval(this.state.countdownInterval)
+            this.gameInterval(15)
             this.setState({
               message: 'Your Turn'
             })
@@ -331,10 +374,12 @@ export default class tictactoe_game extends React.Component {
               timerMessage: ``
             })            
             clearInterval(this.state.timeInterval)
+            clearInterval(this.state.countdownInterval)
             this.setState({
               message: 'Waiting Opponent Turn'
             })
           }
+
 
           snapshot = snapshot.val()
           this.setState({
@@ -345,6 +390,8 @@ export default class tictactoe_game extends React.Component {
             player2Name: snapshot.player2.name,
             player1Type: snapshot.player1.type,
             player2Type: snapshot.player2.type,
+            player1Status: snapshot.player1.status,
+            player2Status: snapshot.player2.status,
           })
         }
       })
@@ -375,12 +422,26 @@ export default class tictactoe_game extends React.Component {
     }
   }
 
-  setPlayer1Ready() {
-    console.log(`PLAYER 1`)
+  setPlayer1Ready() {     
+    console.log('masuk sini player1')
+    db.ref('games').child(this.state.gameId).once('value', snapUser => {
+      if(snapUser.val().player1.uid === this.state.uid && snapUser.val().player1.status !== 'Ready'){     
+        db.ref('games').child(this.state.gameId).child('player1').update({
+            status: 'Ready',
+          })
+      }
+    }) 
   }
 
   setPlayer2Ready() {
-    console.log(`PLAYER 2`)
+    console.log('masuk sini player2')
+    db.ref('games').child(this.state.gameId).once('value', snapUser => {
+      if(snapUser.val().player2.uid === this.state.uid && snapUser.val().player2.status !== 'Ready'){       
+        db.ref('games').child(this.state.gameId).child('player2').update({
+            status: 'Ready',
+          })
+      }
+    })
   }
 
   render() {
@@ -555,7 +616,7 @@ export default class tictactoe_game extends React.Component {
               }
 
               <VrButton onEnter={() => this.setPlayer1Ready() } style={{ backgroundColor: 'crimson', padding: 0.1, marginTop: 0.5 }}>
-                <Text style={{ fontColor: '#fff', fontSize: 0.5 }}>Ready</Text>
+                <Text style={{ fontColor: '#fff', fontSize: 0.5 }}>{ this.state.player1Status }</Text>
               </VrButton>  
             </View>
             <Image style={styles.sideItem} source={asset('left.png')} />        
@@ -591,7 +652,7 @@ export default class tictactoe_game extends React.Component {
               }
 
               <VrButton onEnter={() => this.setPlayer2Ready()} style={{ backgroundColor: 'crimson', padding: 0.1, marginTop: 0.5 }}>
-                <Text style={{ fontColor: '#fff', fontSize: 0.5 }}>Ready</Text>
+                <Text style={{ fontColor: '#fff', fontSize: 0.5 }}>{ this.state.player2Status }</Text>
               </VrButton> 
             </View>
           </View>
