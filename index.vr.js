@@ -132,7 +132,6 @@ export default class tictactoe_game extends React.Component {
   }
 
   fillBoard(index) {
-
     if (this.state.board[index] === '' || this.state.board[index] === null) {
       db.ref('games').child(this.state.gameId).once('value', snapshotGame => {
         if (snapshotGame.val().player1.uid === this.state.uid) {
