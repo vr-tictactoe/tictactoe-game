@@ -40,9 +40,12 @@ export default class tictactoe_game extends React.Component {
       gameOver: false,
       gameOverMessage: '',
       boardOpacity: 1,
+      timeout: 0,
       bounceValue: new Animated.Value(0),
       fadeAnim: new Animated.Value(0.1),
       alertBoardPositionY: new Animated.Value(-8),
+      timerMessage: '',
+      winning: '',
     }
   }
 
@@ -80,7 +83,7 @@ export default class tictactoe_game extends React.Component {
 
     Animated.timing(
       this.state.alertBoardPositionY,
-      { toValue: 10 }
+      { toValue: 8 }
     ).start();
   }
 
@@ -130,9 +133,49 @@ export default class tictactoe_game extends React.Component {
     }
   }
 
+  gameInterval(duration) {
+   let { timeout } = this.state
+   console.log(duration)
+   var timer = duration, seconds;
+   
+   var timeInterval = setInterval(() => {
+     seconds = parseInt(timer % 60, 10);
+     seconds = seconds < 10 ? 0 + seconds : seconds;
+
+       // console.log('waktu akan habis dalam: ' + seconds )
+        this.setState({
+          timerMessage: `Time remaining ${seconds}`
+        })
+
+       this.setState({timeout: timer})
+
+       if (--timer < 0) {
+         timer = duration;
+         clearInterval(10)
+         this.randomBoard()
+       }
+     }, 1000);
+   this.setState({
+    timeInterval : timeInterval
+   })
+ }
+
+
+ randomBoard() {
+   let blankArr = []
+   this.state.board.forEach((arr,index) => {
+    if(arr === ''){
+      blankArr.push(index)
+    }
+  })
+   let randomBoard = Math.floor(Math.random() * blankArr.length);
+   console.log(blankArr,randomBoard)
+   this.clickBoard(blankArr[randomBoard])
+ }
+
   resetGame() {
     setTimeout(() => {
-      NativeModules.LinkingManager.openURL('http://vrtoe.septianfujianto.com/')
+      NativeModules.LinkingManager.openURL('http://vrtoe.septianfujianto.com')
     }, 1500);
   }
 
@@ -190,8 +233,6 @@ export default class tictactoe_game extends React.Component {
         if (this.state.board.indexOf('') === -1 &&
           checkBoard[0].indexOf('XXX') === -1 &&
           checkBoard[0].indexOf('OOO') === -1) {
-          
-          this.checkWinner('DRAW - Good Game')
 
           db.ref('games').child(this.state.gameId).update({
             winner: 'DRAW'
@@ -217,7 +258,7 @@ export default class tictactoe_game extends React.Component {
   }
 
   clickBoard(index) {   
-    console.log(`========================CLICKBOARD`)
+    console.log(`========================CLICKBOARD`,index)
     console.log(JSON.stringify(this.state.player))
     db.ref('games').child(this.state.gameId).once('value',checkPlayer => {
       if(checkPlayer.val().player2.uid !== ''){
@@ -259,7 +300,8 @@ export default class tictactoe_game extends React.Component {
           if (snapshot.val().winner !== ''){
 
             if(snapshot.val().winner === this.state.uid){
-              this.checkWinner(`${this.state.player.name} Win` )
+              this.checkWinner(`${this.state.player.name} - WIN` )
+
               axios.post('https://us-central1-vtitu-191706.cloudfunctions.net/createHistory', {
                 gameId: this.state.gameId,
                 player1: this.state.player1Name,
@@ -267,8 +309,11 @@ export default class tictactoe_game extends React.Component {
                 winner: this.state.player.name,
               })
 
-            }else{
-              this.checkWinner(`${this.state.player.name} Lose`)
+            } else if(snapshot.val().winner === 'DRAW') {
+              this.checkWinner(`${this.state.player.name} - DRAW`)
+          
+            } else {
+              this.checkWinner(`${this.state.player.name} - LOSE`)
             }
           }
 
@@ -277,10 +322,15 @@ export default class tictactoe_game extends React.Component {
               message: 'Waiting for Second Player'
             })
           } else if(snapshot.val().turn === this.state.uid){
+            this.gameInterval(10)
             this.setState({
               message: 'Your Turn'
             })
           } else{
+            this.setState({
+              timerMessage: ``
+            })            
+            clearInterval(this.state.timeInterval)
             this.setState({
               message: 'Waiting Opponent Turn'
             })
@@ -301,6 +351,30 @@ export default class tictactoe_game extends React.Component {
     }
   }
 
+  showGameOverIcon(message) {
+    if (message !== '') {
+      let winning = message.split('-')[1].trim()
+
+      if (winning == 'WIN') {
+        return (
+          <Image style={{ width: 3, height: 1.6, marginBottom: 0.2 }} source={asset('win.png')} />
+        )
+      }
+
+      if (winning == 'LOSE') {
+        return (
+          <Image style={{ width: 1.5, height: 1.5, marginBottom: 0.2 }} source={asset('lose.png')} />
+        )
+      }
+
+      if (winning == 'DRAW') {
+        return (
+          <Image style={{ width: 3, height: 1.6, marginBottom: 0.2 }} source={asset('win.png')} />
+        )
+      }
+    }
+  }
+
   render() {
     const styles = {
       boardSymbol: {
@@ -315,10 +389,17 @@ export default class tictactoe_game extends React.Component {
         textAlign: 'center',
       },
 
-      label: {
-        color: 'crimson',
+      timerTitle: {
         fontSize: 0.5,
-        marginBottom: 0.7
+        fontWeight: 'bold',
+        textAlign: 'center',
+        marginTop: 0.2
+      },
+
+      label: {
+        color: 'white',
+        fontSize: 0.5,
+        marginBottom: 0.2
       },
 
       resetButton: {
@@ -334,7 +415,7 @@ export default class tictactoe_game extends React.Component {
         position: 'relative',
         opacity: this.state.boardOpacity,
         layoutOrigin: [0.5, 0.5],
-        transform: [{ translate: [0, 3.5, -11] }],
+        transform: [{ translate: [0, 0, -11] }],
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
@@ -389,7 +470,7 @@ export default class tictactoe_game extends React.Component {
         ],
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'rgba(221,221,221, 0.6)',
+        backgroundColor: 'rgba(39, 155, 255, 0.7)',
         padding: 0.1,
       },
 
@@ -454,23 +535,6 @@ export default class tictactoe_game extends React.Component {
     return (
       <View>
         <Pano source={asset('winter.jpg')}/>
-        <View style={styles.topArea}>
-                 
-          {/* <View style={styles.topItem}>
-            <Image style={styles.topItem} source={asset(this.state.player1Avatar)} />
-            <Text style={styles.labelTop}>{this.state.player1Name} - {this.state.player1Type}</Text>
-          </View>
-
-         
-          <VrButton>
-            <Text style={styles.labelVs}>VS</Text>
-          </VrButton>
-
-          <View style={styles.topItem}>
-            <Image style={styles.topItem} source={asset(this.state.player2Avatar)} />
-            <Text style={styles.labelTop}>{this.state.player2Name} - {this.state.player2Type}</Text>
-          </View> */}
-        </View>
 
         <View style={styles.container}>
           <View style={styles.sideArea}>
@@ -499,13 +563,12 @@ export default class tictactoe_game extends React.Component {
                 })
               }
             </View>
-            <Text style={styles.title}>{ this.state.game }</Text>
+            <Text style={styles.timerTitle}>{ this.state.timerMessage }</Text>
           </View>
           <View style={styles.sideArea}>
             <Image style={styles.sideItem} source={asset('right.png')} />                    
             <View style={styles.playerSide}>
               <Image style={styles.avatarItem} source={asset(this.state.player2Avatar)} />
-              {/* <Image style={styles.avatarItem} source={asset('alien.png')} /> */}
               {
                 this.state.player2Name ? <Text style={styles.labelTop}>{this.state.player2Name} - {this.state.player2Type}</Text> 
                 : 
@@ -517,9 +580,11 @@ export default class tictactoe_game extends React.Component {
 
         <Animated.View style={styles.messageBoard}>
           <Text style={styles.label}>{this.state.gameOverMessage}</Text>
+          
+          {this.showGameOverIcon(this.state.gameOverMessage) }
 
           <VrButton onEnter={() => this.resetGame() }>
-            <Text style={styles.resetButton}>Play Again</Text>
+            <Image style={{width: 3, height: 0.8}} source={asset('playagain.png')} />           
           </VrButton>
         </Animated.View>
         
