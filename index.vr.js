@@ -373,7 +373,7 @@ export default class tictactoe_game extends React.Component {
         layoutOrigin: [0.5, 0.5],
         opacity: this.state.fadeAnim,
         transform: [
-          { translate: [-1, this.state.alertBoardPositionY, -10] },
+          { translate: [0, this.state.alertBoardPositionY, -10] },
           { scale: 1.5 }
         ],
         alignItems: 'center',
@@ -465,8 +465,11 @@ export default class tictactoe_game extends React.Component {
           <View style={styles.sideArea}>
             <View style={styles.playerSide}>
               <Image style={styles.avatarItem} source={asset(this.state.player1Avatar)} />
-              {/* <Image style={styles.avatarItem} source={asset('alien.png')} /> */}
-              <Text style={styles.labelTop}>{this.state.player1Name} - {this.state.player1Type}</Text>
+              {
+                this.state.player1Name ? <Text style={styles.labelTop}>{this.state.player1Name} - {this.state.player1Type}</Text>
+                :
+                <Text></Text>
+              }
             </View>
             <Image style={styles.sideItem} source={asset('left.png')} />          
           </View>
@@ -491,7 +494,11 @@ export default class tictactoe_game extends React.Component {
             <View style={styles.playerSide}>
               <Image style={styles.avatarItem} source={asset(this.state.player2Avatar)} />
               {/* <Image style={styles.avatarItem} source={asset('alien.png')} /> */}
-              <Text style={styles.labelTop}>{this.state.player2Name} - {this.state.player2Type}</Text>
+              {
+                this.state.player2Name ? <Text style={styles.labelTop}>{this.state.player2Name} - {this.state.player2Type}</Text> 
+                : 
+                <Text></Text>
+              }
             </View>
           </View>
         </View>
