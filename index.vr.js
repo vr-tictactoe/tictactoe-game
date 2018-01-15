@@ -125,6 +125,46 @@ export default class tictactoe_game extends React.Component {
     }
   }
 
+  countDown(secs) {
+    console.log(`please choose your X in ${secs}`)
+
+    this.setState({
+      countDown: `please choose your X in ${secs}`
+    })
+
+    if (secs < 1) {
+      clearTimeout(timer)
+      return this.endOfTime()
+    }
+
+    secs--
+    console.log(secs)
+    var timer = setTimeout('countDown(' + secs + ')', 1000);
+
+  }
+
+  endOfTime() {
+    this.setState({
+      countDown: `Time's UP!!!`
+    })                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+
+    this.randomBoard()
+  }
+
+  randomBoard() {
+    let blankArr = []
+    this.state.board.forEach((arr, index) => {
+      if (arr === '') {
+        blankArr.push(index)
+      }
+    })
+    
+    let indexBoard = Math.floor(Math.random() * temp.length + 1);
+    this.clickBoard(blankArr[indexBoard])
+  }
+
+
+
   resetGame() {
     NativeModules.LinkingManager.openURL('http://localhost:3000/')
   }
@@ -221,6 +261,7 @@ export default class tictactoe_game extends React.Component {
   }
 
   componentDidMount() {
+    this.countDown(15)
     let queryString = NativeModules.Location.search;
     let splitString = queryString.split('&');
     let gameId = splitString[0].split('=')[1];
