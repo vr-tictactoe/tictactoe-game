@@ -232,8 +232,6 @@ export default class tictactoe_game extends React.Component {
         if (this.state.board.indexOf('') === -1 &&
           checkBoard[0].indexOf('XXX') === -1 &&
           checkBoard[0].indexOf('OOO') === -1) {
-          
-          this.checkWinner('DRAW - Good Game')
 
           db.ref('games').child(this.state.gameId).update({
             winner: 'DRAW'
@@ -309,7 +307,9 @@ export default class tictactoe_game extends React.Component {
                 winner: this.state.player.name,
               })
 
-            }else{
+            } else if(snapshot.val().winner === 'DRAW') {
+              this.checkWinner(`DRAW`)
+            } else {
               this.checkWinner(`${this.state.player.name} Lose`)
             }
           }
@@ -324,6 +324,9 @@ export default class tictactoe_game extends React.Component {
               message: 'Your Turn'
             })
           } else{
+            this.setState({
+              timerMessage: ``
+            })            
             clearInterval(this.state.timeInterval)
             this.setState({
               message: 'Waiting Opponent Turn'
