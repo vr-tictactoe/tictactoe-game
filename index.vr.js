@@ -11,6 +11,8 @@ import {
   Image
 } from 'react-vr';
 
+const AnimatedModel = Animated.createAnimatedComponent(Image);
+
 import axios from 'axios'
 
 import { db } from './firebase'
@@ -45,12 +47,34 @@ export default class tictactoe_game extends React.Component {
       timeout: 0,
       gameCountingTime: 0,
       bounceValue: new Animated.Value(0),
+
       fadeAnim: new Animated.Value(0.1),
       alertBoardPositionY: new Animated.Value(-8),
       timerMessage: '',
       winning: '',
-      gameStatus: ''
+      gameStatus: '',
+      background: '',
+      backgroundColor: '',
+      colorSelected: '',
+      transformX: null,
+      transformY: null,
+      transformZ: null,
+      avatarColor: '',
+      rotation: new Animated.Value(0),
     }
+  }
+
+  rotate = ()  =>{
+    this.state.rotation.setValue(0);
+    console.log('ini rotate', this.state.rotation)
+    Animated.timing(
+      this.state.rotation,
+      {
+        toValue: 360,
+        duration: 10000,
+        // easing: Easing.linear
+      }
+    ).start(this.rotate);
   }
 
   boxFocused(index) {
@@ -65,6 +89,34 @@ export default class tictactoe_game extends React.Component {
       boxFocus: itemFocus,
       boxTimer: timerFocused
     })    
+  }
+
+  randomBackground = () => {
+    let { background, backgroundColor, transformX, transformY, transformZ } = this.state
+    
+    let backgroundImage = ['MilleniumFalcon8K.jpg', 'space2.jpg', 'ship2.jpg', 'ship3.jpg']
+    let posisiX = [-5, -5.5, 2, 30]
+    let posisiY = [126, 55, 188, 5]
+    let posisiZ = [8, -9, 1, 10]
+    let colorBackground = ['rgba(58, 135, 234, 0.62)', 'rgba(80, 192, 237, 0.62)', 'rgba(75, 163, 229, 0.62)', 'rgba(242, 159, 43, 0.62)']
+    let selectColour =  ['rgba(58, 135, 234, 0.9)', 'rgba(80, 192, 237, 0.9)', 'rgba(75, 163, 229, 0.9)', 'rgba(242, 159, 43, 0.9)']
+    let avatarBackground = ['rgba(58, 135, 234, 0.6)', 'rgba(7, 36, 99, 0.6)', 'rgba(75, 163, 229, 0.6)', 'rgba(242, 159, 43, 0.6)']
+    let hasil = Math.floor((Math.random() * backgroundImage.length - 1) + 1)
+    console.log('ini hasil random', hasil)
+    
+    this.setState({
+      background: backgroundImage[hasil],
+      backgroundColor: colorBackground[hasil],
+      colorSelected: selectColour[hasil],
+      avatarColor: avatarBackground[hasil],
+      rotateX: posisiX[hasil],
+      rotateY: posisiY[hasil],
+      rotateZ: posisiZ[hasil]
+    })
+
+    let gambar = [backgroundImage[hasil],colorBackground[hasil], selectColour[hasil],posisiX[hasil], posisiY[hasil], posisiZ[hasil]  ]
+    console.log('ini gambar', gambar)
+    console.log('ini hasil ke 2', hasil)
   }
 
   boxLeave(index) {
@@ -105,7 +157,7 @@ export default class tictactoe_game extends React.Component {
   setBoxContent(index) {
     if (this.state.boxFocus[index]) {
       return {
-        backgroundColor: 'rgba(39, 155, 255, 0.7)',
+        backgroundColor: this.state.colorSelected,
         borderRadius: 0.1,
         margin: 0.1,
         height: 2,
@@ -115,7 +167,7 @@ export default class tictactoe_game extends React.Component {
       }
     } else {
       return { 
-        backgroundColor: 'rgba(123, 213, 222, 0.75)', 
+        backgroundColor: this.state.backgroundColor, 
         borderRadius: 0.1,
         margin: 0.1, 
         height: 2, 
@@ -311,6 +363,7 @@ export default class tictactoe_game extends React.Component {
   }
 
   componentDidMount() {
+    // this.randomBackground()
     let queryString = NativeModules.Location.search;
     let splitString = queryString.split('&');
     let gameId = splitString[0].split('=')[1];
@@ -443,6 +496,10 @@ export default class tictactoe_game extends React.Component {
       }
     })
   }
+  
+  componentWillMount() {
+    this.randomBackground()
+  }
 
   render() {
     const styles = {
@@ -484,7 +541,7 @@ export default class tictactoe_game extends React.Component {
         position: 'relative',
         opacity: this.state.boardOpacity,
         layoutOrigin: [0.5, 0.5],
-        transform: [{ translate: [0, 0, -11] }],
+        transform: [{ translate: [0, 0, -13.5] }],
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
@@ -562,6 +619,7 @@ export default class tictactoe_game extends React.Component {
         height: 3,
         alignItems: 'center',
         justifyContent: 'center',
+        // transform: [{translate: [0, 0, -3]}]
       },
 
       labelVs: {
@@ -572,12 +630,13 @@ export default class tictactoe_game extends React.Component {
 
       labelTop: {
         marginTop: 0.2,
-        backgroundColor: 'rgba(39, 155, 255, 0.5)',
+        backgroundColor: this.state.avatarColor,
         padding: 0.1,
         borderRadius: 0.2,
         textAlign: 'center',
         fontSize: 0.3,
-        color: '#fff'
+        color: '#fff',
+        // transform: [{rotateY: this.state.rotation}]
       },
 
       sideItem: {
@@ -603,12 +662,29 @@ export default class tictactoe_game extends React.Component {
     
     return (
       <View>
-        <Pano source={asset('winter.jpg')}/>
+        <Pano source={asset(this.state.background)} style={{transform: [{rotateY : this.state.rotateY},{rotateZ : this.state.rotateZ}, {rotateX : this.state.rotateX}]}}/>
+        <View style={styles.topArea}>
+                 
+          {/* <View style={styles.topItem}>
+            <Image style={styles.topItem} source={asset(this.state.player1Avatar)} />
+            <Text style={styles.labelTop}>{this.state.player1Name} - {this.state.player1Type}</Text>
+          </View>
+
+         
+          <VrButton>
+            <Text style={styles.labelVs}>VS</Text>
+          </VrButton>
+
+          <View style={styles.topItem}>
+            <Image style={styles.topItem} source={asset(this.state.player2Avatar)} />
+            <Text style={styles.labelTop}>{this.state.player2Name} - {this.state.player2Type}</Text>
+          </View> */}
+        </View>
 
         <View style={styles.container}>
           <View style={styles.sideArea}>
             <View style={styles.playerSide}>
-              <Image style={styles.avatarItem} source={asset(this.state.player1Avatar)} />
+              <AnimatedModel style={styles.avatarItem} source={asset(this.state.player1Avatar)} />
               {
                 this.state.player1Name ? <Text style={styles.labelTop}>{this.state.player1Name} - {this.state.player1Type}</Text>
                 :
