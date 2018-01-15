@@ -44,6 +44,8 @@ export default class tictactoe_game extends React.Component {
       bounceValue: new Animated.Value(0),
       fadeAnim: new Animated.Value(0.1),
       alertBoardPositionY: new Animated.Value(-8),
+      timerMessage: '',
+      winning: '',
     }
   }
 
@@ -81,7 +83,7 @@ export default class tictactoe_game extends React.Component {
 
     Animated.timing(
       this.state.alertBoardPositionY,
-      { toValue: 10 }
+      { toValue: 8 }
     ).start();
   }
 
@@ -99,7 +101,8 @@ export default class tictactoe_game extends React.Component {
   setBoxContent(index) {
     if (this.state.boxFocus[index]) {
       return {
-        backgroundColor: 'rgba(237, 20, 61, 0.4117647058823529)',
+        backgroundColor: 'rgba(39, 155, 255, 0.7)',
+        borderRadius: 0.1,
         margin: 0.1,
         height: 2,
         width: 2,
@@ -108,9 +111,13 @@ export default class tictactoe_game extends React.Component {
       }
     } else {
       return { 
-        backgroundColor: 'gold', 
-        margin: 0.1, height: 2, width: 2, 
-        alignItems: 'center', justifyContent: 'center', 
+        backgroundColor: 'rgba(123, 213, 222, 0.75)', 
+        borderRadius: 0.1,
+        margin: 0.1, 
+        height: 2, 
+        width: 2, 
+        alignItems: 'center', 
+        justifyContent: 'center', 
       }
     }
 
@@ -126,44 +133,6 @@ export default class tictactoe_game extends React.Component {
     }
   }
 
-  countDown(secs) {
-    console.log(`please choose your X in ${secs}`)
-
-    this.setState({
-      countDown: `please choose your X in ${secs}`
-    })
-
-    if (secs < 1) {
-      clearTimeout(timer)
-      return this.endOfTime()
-    }
-
-    secs--
-    console.log(secs)
-    var timer = setTimeout('countDown(' + secs + ')', 1000);
-
-  }
-
-  endOfTime() {
-    this.setState({
-      countDown: `Time's UP!!!`
-    })                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
-
-    this.randomBoard()
-  }
-
-  randomBoard() {
-    let blankArr = []
-    this.state.board.forEach((arr, index) => {
-      if (arr === '') {
-        blankArr.push(index)
-      }
-    })
-    
-    let indexBoard = Math.floor(Math.random() * temp.length + 1);
-    this.clickBoard(blankArr[indexBoard])
-  }
-
   gameInterval(duration) {
    let { timeout } = this.state
    console.log(duration)
@@ -175,10 +144,11 @@ export default class tictactoe_game extends React.Component {
 
        // console.log('waktu akan habis dalam: ' + seconds )
         this.setState({
-          message: `Time remaining ${seconds}`
+          timerMessage: `Time remaining ${seconds}`
         })
 
        this.setState({timeout: timer})
+
        if (--timer < 0) {
          timer = duration;
          clearInterval(10)
@@ -204,11 +174,12 @@ export default class tictactoe_game extends React.Component {
  }
 
   resetGame() {
-    NativeModules.LinkingManager.openURL('http://localhost:3000/')
+    setTimeout(() => {
+      NativeModules.LinkingManager.openURL('http://localhost:3000/')
+    }, 2000); 
   }
 
   fillBoard(index) {
-
     if (this.state.board[index] === '' || this.state.board[index] === null) {
       db.ref('games').child(this.state.gameId).once('value', snapshotGame => {
         if (snapshotGame.val().player1.uid === this.state.uid) {
@@ -262,8 +233,6 @@ export default class tictactoe_game extends React.Component {
         if (this.state.board.indexOf('') === -1 &&
           checkBoard[0].indexOf('XXX') === -1 &&
           checkBoard[0].indexOf('OOO') === -1) {
-          
-          this.checkWinner('DRAW - Good Game')
 
           db.ref('games').child(this.state.gameId).update({
             winner: 'DRAW'
@@ -275,6 +244,16 @@ export default class tictactoe_game extends React.Component {
         }
 
       })
+    }
+  }
+
+  setBoardPieceContent(index, board) {
+    let symbol = board
+
+    if (this.state.board[index] !== '') {
+      return (
+        <Image style={{ width: 1, height: 1 }} source={asset(`${board}.png`)} />
+      )
     }
   }
 
@@ -299,7 +278,6 @@ export default class tictactoe_game extends React.Component {
   }
 
   componentDidMount() {
-    this.countDown(15)
     let queryString = NativeModules.Location.search;
     let splitString = queryString.split('&');
     let gameId = splitString[0].split('=')[1];
@@ -322,7 +300,8 @@ export default class tictactoe_game extends React.Component {
           if (snapshot.val().winner !== ''){
 
             if(snapshot.val().winner === this.state.uid){
-              this.checkWinner(`${this.state.player.name} Win` )
+              this.checkWinner(`${this.state.player.name} - WIN` )
+
               axios.post('https://us-central1-vtitu-191706.cloudfunctions.net/createHistory', {
                 gameId: this.state.gameId,
                 player1: this.state.player1Name,
@@ -330,8 +309,11 @@ export default class tictactoe_game extends React.Component {
                 winner: this.state.player.name,
               })
 
-            }else{
-              this.checkWinner(`${this.state.player.name} Lose`)
+            } else if(snapshot.val().winner === 'DRAW') {
+              this.checkWinner(`${this.state.player.name} - DRAW`)
+          
+            } else {
+              this.checkWinner(`${this.state.player.name} - LOSE`)
             }
           }
 
@@ -344,7 +326,10 @@ export default class tictactoe_game extends React.Component {
             this.setState({
               message: 'Your Turn'
             })
-          } else {
+          } else{
+            this.setState({
+              timerMessage: ``
+            })            
             clearInterval(this.state.timeInterval)
             this.setState({
               message: 'Waiting Opponent Turn'
@@ -366,6 +351,38 @@ export default class tictactoe_game extends React.Component {
     }
   }
 
+  showGameOverIcon(message) {
+    if (message !== '') {
+      let winning = message.split('-')[1].trim()
+
+      if (winning == 'WIN') {
+        return (
+          <Image style={{ width: 3, height: 1.6, marginBottom: 0.2 }} source={asset('win.png')} />
+        )
+      }
+
+      if (winning == 'LOSE') {
+        return (
+          <Image style={{ width: 1.5, height: 1.5, marginBottom: 0.2 }} source={asset('lose.png')} />
+        )
+      }
+
+      if (winning == 'DRAW') {
+        return (
+          <Image style={{ width: 3, height: 1.6, marginBottom: 0.2 }} source={asset('win.png')} />
+        )
+      }
+    }
+  }
+
+  setPlayer1Ready() {
+    console.log(`PLAYER 1`)
+  }
+
+  setPlayer2Ready() {
+    console.log(`PLAYER 2`)
+  }
+
   render() {
     const styles = {
       boardSymbol: {
@@ -376,16 +393,21 @@ export default class tictactoe_game extends React.Component {
 
       title: {
         fontSize: 0.5,
-        position: 'absolute',
-        top: -1,
         fontWeight: 'bold',
-        left: '35%'
+        textAlign: 'center',
+      },
+
+      timerTitle: {
+        fontSize: 0.5,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        marginTop: 0.2
       },
 
       label: {
-        color: 'crimson',
+        color: 'white',
         fontSize: 0.5,
-        marginBottom: 0.7
+        marginBottom: 0.2
       },
 
       resetButton: {
@@ -401,12 +423,12 @@ export default class tictactoe_game extends React.Component {
         position: 'relative',
         opacity: this.state.boardOpacity,
         layoutOrigin: [0.5, 0.5],
-        transform: [{ translate: [-1, 3.5, -11] }],
+        transform: [{ translate: [0, 0, -11] }],
         flex: 1,
-        backgroundColor: 'rgba(221,221,221, 0.6)',
         alignItems: 'center',
-        justifyContent: 'flex-start',
-        height: 'auto'
+        justifyContent: 'center',
+        height: 'auto',
+        flexDirection: 'row',
       },
 
       board: {
@@ -451,32 +473,31 @@ export default class tictactoe_game extends React.Component {
         layoutOrigin: [0.5, 0.5],
         opacity: this.state.fadeAnim,
         transform: [
-          { translate: [-1, this.state.alertBoardPositionY, -10] },
+          { translate: [0, this.state.alertBoardPositionY, -10] },
           { scale: 1.5 }
         ],
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'rgba(221,221,221, 0.6)',
+        backgroundColor: 'rgba(39, 155, 255, 0.7)',
         padding: 0.1,
       },
 
       topArea: {
-        width: 12,
-        height: 4,
-        layoutOrigin: [0, 0],
-        transform: [
-          { translate: [-7, 7.7, -10] },
-        ],
+        width: 8,
+        height: 2,
+        // backgroundColor: 'crimson',
+        position: 'absolute',
+        top: -2,
+        left: 0,
         flexDirection: 'row',
         flexWrap: 'wrap',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'rgba(221,221,221, 0.6)',
         padding: 0.1,
       },
 
-      topItem: {
-        width: 2,
+      avatarItem: {
+        width: 2.3,
         height: 3,
         alignItems: 'center',
         justifyContent: 'center',
@@ -489,54 +510,100 @@ export default class tictactoe_game extends React.Component {
       },
 
       labelTop: {
+        marginTop: 0.2,
+        backgroundColor: 'rgba(39, 155, 255, 0.5)',
+        padding: 0.1,
+        borderRadius: 0.2,
         textAlign: 'center',
         fontSize: 0.3,
-        color: 'crimson'
+        color: '#fff'
+      },
+
+      sideItem: {
+        height: '100%',        
+        width: 1,
+        resizeMode: 'contain',
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+
+      sideArea: {
+        flex: 1,
+        alignItems: 'center',
+        height: 'auto',
+        flexDirection: 'row',  
+      },
+
+      playerSide: {
+        width: 3.5, 
+        alignItems: 'center'
       }
     }
     
     return (
       <View>
         <Pano source={asset('winter.jpg')}/>
-        <View style={styles.topArea}>
-                 
-          <View style={styles.topItem}>
-            <Image style={styles.topItem} source={asset(this.state.player1Avatar)} />
-            <Text style={styles.labelTop}>{this.state.player1Name} - {this.state.player1Type}</Text>
-          </View>
-
-         
-          <VrButton>
-            <Text style={styles.labelVs}>VS</Text>
-          </VrButton>
-
-          <View style={styles.topItem}>
-            <Image style={styles.topItem} source={asset(this.state.player2Avatar)} />
-            <Text style={styles.labelTop}>{this.state.player2Name} - {this.state.player2Type}</Text>
-          </View>
-        </View>
 
         <View style={styles.container}>
-          <Text style={styles.title}>{this.state.message}</Text>
-          <View style={styles.board}>
-            {
-              this.state.board.map((box, index) => {
-                return (
-                  <VrButton key={index} style={this.setBoxContent(index)}
-                    onEnter={() => this.boxFocused(index)} onExit={() => this.boxLeave(index)}>
-                    <Text style={styles.boardSymbol}> {box !== null ? box : ''} </Text>
-                  </VrButton>
-                )
-              })
-            }
+          <View style={styles.sideArea}>
+            <View style={styles.playerSide}>
+              <Image style={styles.avatarItem} source={asset(this.state.player1Avatar)} />
+              {
+                this.state.player1Name ? <Text style={styles.labelTop}>{this.state.player1Name} - {this.state.player1Type}</Text>
+                :
+                <Text></Text>
+              }
+
+              <VrButton onEnter={() => this.setPlayer1Ready() } style={{ backgroundColor: 'crimson', padding: 0.1, marginTop: 0.5 }}>
+                <Text style={{ fontColor: '#fff', fontSize: 0.5 }}>Ready</Text>
+              </VrButton>  
+            </View>
+            <Image style={styles.sideItem} source={asset('left.png')} />        
+          </View>
+
+          <View>
+            <View style={styles.topArea}>
+              <Text style={styles.title}>{this.state.message}</Text>
+            </View> 
+            
+            <View style={styles.board}>
+              {
+                this.state.board.map((box, index) => {
+                  return (
+                    <VrButton key={index} style={this.setBoxContent(index)}
+                      onEnter={() => this.boxFocused(index)} onExit={() => this.boxLeave(index)}>
+                      { this.setBoardPieceContent(index, box) }
+                    </VrButton>
+                  )
+                })
+              }
+            </View>
+            <Text style={styles.timerTitle}>{ this.state.timerMessage }</Text>
+          </View>
+          <View style={styles.sideArea}>
+            <Image style={styles.sideItem} source={asset('right.png')} />                    
+            <View style={styles.playerSide}>
+              <Image style={styles.avatarItem} source={asset(this.state.player2Avatar)} />
+              {
+                this.state.player2Name ? <Text style={styles.labelTop}>{this.state.player2Name} - {this.state.player2Type}</Text> 
+                : 
+                <Text></Text>
+              }
+
+              <VrButton onEnter={() => this.setPlayer2Ready()} style={{ backgroundColor: 'crimson', padding: 0.1, marginTop: 0.5 }}>
+                <Text style={{ fontColor: '#fff', fontSize: 0.5 }}>Ready</Text>
+              </VrButton> 
+            </View>
           </View>
         </View>
 
         <Animated.View style={styles.messageBoard}>
           <Text style={styles.label}>{this.state.gameOverMessage}</Text>
+          
+          {this.showGameOverIcon(this.state.gameOverMessage) }
 
           <VrButton onEnter={() => this.resetGame() }>
-            <Text style={styles.resetButton}>Play Again</Text>
+            <Image style={{width: 3, height: 0.8}} source={asset('playagain.png')} />           
           </VrButton>
         </Animated.View>
         
