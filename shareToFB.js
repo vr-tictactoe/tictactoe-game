@@ -23,3 +23,7 @@ export const saveImageLocale = (backgroundImage) => {
         })
     })
 }
+
+export const shareImageFB = (savedImage) => {
+  
+}
