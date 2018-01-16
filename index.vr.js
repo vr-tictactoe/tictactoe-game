@@ -9,7 +9,8 @@ import {
   NativeModules,
   VrButton,
   Image,
-  Sound
+  Sound,
+  VrSoundEffects
 } from 'react-vr';
 
 const AnimatedModel = Animated.createAnimatedComponent(Image);
@@ -85,12 +86,13 @@ export default class tictactoe_game extends React.Component {
 
   soundFocus() {
     let timerFocused = setTimeout(() => {
-      this.setState({soundBox: 'laser.wav'})
+      console.log(`==========FOCUS SOUND`)
+      return { wav: asset('laser.wav') }
     }, 1500); 
 
-    this.setState({ 
+    this.setState({
       soundTimer: timerFocused
-    })    
+    })
   }
 
   soundLeave() {
@@ -101,9 +103,10 @@ export default class tictactoe_game extends React.Component {
     const itemFocus = this.state.boxFocus
     itemFocus[index] = true
 
+    VrSoundEffects.play()
+
     let timerFocused = setTimeout(() => {
       this.clickBoard(index)
-      this.soundFocus()
     }, 1500); 
 
     this.setState({ 
@@ -560,7 +563,8 @@ export default class tictactoe_game extends React.Component {
     console.log('ini player 2', this.state.player2Color)
   }
   
-  componentWillMount() {
+  componentWillMount() {  
+    VrSoundEffects.load(asset('laser.wav'))
     this.randomBackground()
   }
 
@@ -722,7 +726,7 @@ export default class tictactoe_game extends React.Component {
         alignItems: 'center'
       }
     }
-    
+
     return (
       <View>
         <Pano source={asset(this.state.background)} style={{transform: [{rotateY : this.state.rotateY},{rotateZ : this.state.rotateZ}, {rotateX : this.state.rotateX}]}}/>
@@ -765,7 +769,7 @@ export default class tictactoe_game extends React.Component {
                 style={{ backgroundColor: this.state.player1Color, padding: 0.1, marginTop: 0.5 }}
 
               >
-                <Text style={{ fontColor: '#fff', fontSize: 0.5 }}>{ this.state.player1Status }</Text>
+                <Text style={{ color: '#fff', fontSize: 0.5 }}>{ this.state.player1Status }</Text>
               </VrButton>  
             </View>
             <Image style={styles.sideItem} source={asset('left.png')} />        
@@ -781,9 +785,9 @@ export default class tictactoe_game extends React.Component {
                 this.state.board.map((box, index) => {
                   return (
                     <VrButton key={index} style={this.setBoxContent(index)}
-                      
                       onEnter={() => this.boxFocused(index)} 
-                      onEnterSound={{wav: asset(this.state.soundBox)}}
+                      onEnterSound={() => this.soundFocus()}
+                      onExitSound={() => this.soundLeave()}
                       onExit={() => this.boxLeave(index)}
                       >
                       { this.setBoardPieceContent(index, box) }
@@ -809,7 +813,7 @@ export default class tictactoe_game extends React.Component {
                 onEnterSound={{mp3: asset('ready.mp3')}}
                 style={{ backgroundColor: this.state.player2Color, padding: 0.1, marginTop: 0.5 }}
               >
-                <Text style={{ fontColor: '#fff', fontSize: 0.5 }}>{ this.state.player2Status }</Text>
+                <Text style={{ color: '#fff', fontSize: 0.5 }}>{ this.state.player2Status }</Text>
               </VrButton> 
             </View>
           </View>
