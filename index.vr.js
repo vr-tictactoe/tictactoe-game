@@ -104,6 +104,7 @@ export default class tictactoe_game extends React.Component {
     let timerFocused = setTimeout(() => {
       this.clickBoard(index)
       this.soundFocus()
+      console.log('ini sound', this.state.soundBox)
     }, 1500); 
 
     this.setState({ 
@@ -221,6 +222,7 @@ export default class tictactoe_game extends React.Component {
   }
 
   gameCountDown(duration) {
+    console.log('masuk sini')
      let { gameCountingTime } = this.state
      var timer = duration, seconds;
      var countdownInterval = setInterval(() => {
@@ -553,7 +555,8 @@ export default class tictactoe_game extends React.Component {
       },
 
       label: {
-        color: 'red',
+        color: 'white',
+        fontWeight: 'bold',
         fontSize: 0.5,
         marginBottom: 0.2
       },
@@ -626,7 +629,7 @@ export default class tictactoe_game extends React.Component {
         ],
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'rgba(39, 155, 255, 0.7)',
+        backgroundColor: 'rgba(39, 155, 255, 0)',
         padding: 0.1,
       },
 
