@@ -64,7 +64,9 @@ export default class tictactoe_game extends React.Component {
       labelColor: '',
       rotation: new Animated.Value(0),
       player1Color: '' || 'crimson',
-      player2Color: '' || 'crimson'
+      player2Color: '' || 'crimson',
+      soundTimer: null,
+      soundBox: ''
     }
   }
 
@@ -81,12 +83,27 @@ export default class tictactoe_game extends React.Component {
     ).start(this.rotate);
   }
 
+  soundFocus() {
+    let timerFocused = setTimeout(() => {
+      this.setState({soundBox: 'laser.wav'})
+    }, 1500); 
+
+    this.setState({ 
+      soundTimer: timerFocused
+    })    
+  }
+
+  soundLeave() {
+    clearTimeout(this.state.soundTimer)
+  }
+
   boxFocused(index) {
     const itemFocus = this.state.boxFocus
     itemFocus[index] = true
 
     let timerFocused = setTimeout(() => {
       this.clickBoard(index)
+      this.soundFocus()
     }, 1500); 
 
     this.setState({ 
@@ -129,6 +146,7 @@ export default class tictactoe_game extends React.Component {
     const itemFocus = this.state.boxFocus
     itemFocus[index] = false
     clearTimeout(this.state.boxTimer)
+    this.soundLeave()
 
     this.setState({
       boxFocus: itemFocus
@@ -491,9 +509,9 @@ export default class tictactoe_game extends React.Component {
         this.setState({player1Color: 'green'})
       }
     })
-
-    
   }
+
+  
 
   setPlayer2Ready() {
     console.log('masuk sini player2')
@@ -677,7 +695,7 @@ export default class tictactoe_game extends React.Component {
         <Pano source={asset(this.state.background)} style={{transform: [{rotateY : this.state.rotateY},{rotateZ : this.state.rotateZ}, {rotateX : this.state.rotateX}]}}/>
         <Sound 
           source={{ mp3: asset('starwars.mp3') }}
-          volume={8}
+          volume={50}
           loop={true}
         />
         <View style={styles.topArea}>
@@ -732,7 +750,7 @@ export default class tictactoe_game extends React.Component {
                     <VrButton key={index} style={this.setBoxContent(index)}
                       
                       onEnter={() => this.boxFocused(index)} 
-                      onEnterSound={{wav: asset('laser.wav')}}
+                      onEnterSound={{wav: asset(this.state.soundBox)}}
                       onExit={() => this.boxLeave(index)}
                       >
                       { this.setBoardPieceContent(index, box) }
