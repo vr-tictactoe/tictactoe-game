@@ -84,28 +84,11 @@ export default class tictactoe_game extends React.Component {
     ).start(this.rotate);
   }
 
-  soundFocus() {
-    let timerFocused = setTimeout(() => {
-      console.log(`==========FOCUS SOUND`)
-      return { wav: asset('laser.wav') }
-    }, 1500); 
-
-    this.setState({
-      soundTimer: timerFocused
-    })
-  }
-
-  soundLeave() {
-    clearTimeout(this.state.soundTimer)
-  }
-
   boxFocused(index) {
     const itemFocus = this.state.boxFocus
     itemFocus[index] = true
-
-    VrSoundEffects.play()
-
     let timerFocused = setTimeout(() => {
+      VrSoundEffects.play(asset('laser.wav'))
       this.clickBoard(index)
     }, 1500); 
 
@@ -786,8 +769,6 @@ export default class tictactoe_game extends React.Component {
                   return (
                     <VrButton key={index} style={this.setBoxContent(index)}
                       onEnter={() => this.boxFocused(index)} 
-                      onEnterSound={() => this.soundFocus()}
-                      onExitSound={() => this.soundLeave()}
                       onExit={() => this.boxLeave(index)}
                       >
                       { this.setBoardPieceContent(index, box) }
