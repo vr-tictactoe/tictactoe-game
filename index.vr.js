@@ -131,7 +131,7 @@ export default class tictactoe_game extends React.Component {
     const itemFocus = this.state.boxFocus
     itemFocus[index] = false
     clearTimeout(this.state.boxTimer)
-    this.soundLeave()
+    // this.soundLeave()
 
     this.setState({
       boxFocus: itemFocus
@@ -282,7 +282,7 @@ export default class tictactoe_game extends React.Component {
       db.ref('games').child(this.state.gameId).once('value', snapshotGame => {
         if (snapshotGame.val().player1.uid === this.state.uid) {
           VrSoundEffects.play(asset('laser.wav'))
-          this.state.board.splice(ichendex, 1, snapshotGame.val().player1.type)
+          this.state.board.splice(index, 1, snapshotGame.val().player1.type)
           db.ref('games').child(this.state.gameId).update({
             board: this.state.board,
             turn: snapshotGame.val().player2.uid
