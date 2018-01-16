@@ -419,6 +419,7 @@ export default class tictactoe_game extends React.Component {
               })
 
             } else if(snapshot.val().winner === 'DRAW') {
+              this.checkWinner(`${this.state.player.name} - DRAW`)
               db.ref('users').orderByChild('uid').equalTo(playerUID).once('value', snaphotUser => {
                 snaphotUser.forEach(snapUser => {
                   let totalPlay = snapUser.val().totalPlay + 1
@@ -430,7 +431,14 @@ export default class tictactoe_game extends React.Component {
                 })
               })
 
-              this.checkWinner(`${this.state.player.name} - DRAW`)
+              if (snapshot.val().turn === this.state.uid) {
+                axios.post('https://us-central1-vtitu-191706.cloudfunctions.net/createHistory', {
+                  gameId: this.state.gameId,
+                  player1: this.state.player1Name,
+                  player2: this.state.player2Name,
+                  winner: 'DRAW',
+                })
+              }
           
             } else {
               clearInterval(this.state.timeInterval)
