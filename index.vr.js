@@ -8,7 +8,8 @@ import {
   Animated,
   NativeModules,
   VrButton,
-  Image
+  Image,
+  Sound
 } from 'react-vr';
 
 const AnimatedModel = Animated.createAnimatedComponent(Image);
@@ -60,7 +61,10 @@ export default class tictactoe_game extends React.Component {
       transformY: null,
       transformZ: null,
       avatarColor: '',
+      labelColor: '',
       rotation: new Animated.Value(0),
+      player1Color: '' || 'crimson',
+      player2Color: '' || 'crimson'
     }
   }
 
@@ -83,7 +87,7 @@ export default class tictactoe_game extends React.Component {
 
     let timerFocused = setTimeout(() => {
       this.clickBoard(index)
-    }, 2000); 
+    }, 1500); 
 
     this.setState({ 
       boxFocus: itemFocus,
@@ -92,15 +96,16 @@ export default class tictactoe_game extends React.Component {
   }
 
   randomBackground = () => {
-    let { background, backgroundColor, transformX, transformY, transformZ } = this.state
+    let { background, backgroundColor, transformX, transformY, transformZ, labelColor } = this.state
     
-    let backgroundImage = ['MilleniumFalcon8K.jpg', 'space2.jpg', 'ship2.jpg', 'ship3.jpg']
-    let posisiX = [-5, -5.5, 2, 30]
-    let posisiY = [126, 55, 188, 5]
-    let posisiZ = [8, -9, 1, 10]
-    let colorBackground = ['rgba(58, 135, 234, 0.62)', 'rgba(80, 192, 237, 0.62)', 'rgba(75, 163, 229, 0.62)', 'rgba(242, 159, 43, 0.62)']
-    let selectColour =  ['rgba(58, 135, 234, 0.9)', 'rgba(80, 192, 237, 0.9)', 'rgba(75, 163, 229, 0.9)', 'rgba(242, 159, 43, 0.9)']
-    let avatarBackground = ['rgba(58, 135, 234, 0.6)', 'rgba(7, 36, 99, 0.6)', 'rgba(75, 163, 229, 0.6)', 'rgba(242, 159, 43, 0.6)']
+    let backgroundImage = ['ship2.jpg','MilleniumFalcon8K.jpg', 'space2.jpg', 'ship3.jpg']
+    let posisiX = [2,-5, -5.5, 30]
+    let posisiY = [188, 126, 55, 5]
+    let posisiZ = [1, 8, -9, 10]
+    let colorBackground = ['rgba(75, 163, 229, 0.62)', 'rgba(58, 135, 234, 0.62)', 'rgba(80, 192, 237, 0.62)', 'rgba(242, 159, 43, 0.62)']
+    let selectColour =  ['rgba(75, 163, 229, 0.9)', 'rgba(58, 135, 234, 0.9)', 'rgba(80, 192, 237, 0.9)', 'rgba(242, 159, 43, 0.9)']
+    let avatarBackground = ['rgba(75, 163, 229, 0.6)', 'rgba(58, 135, 234, 0.6)', 'rgba(80, 192, 237, 0.6)', 'rgba(242, 159, 43, 0.6)']
+    let colorLabel = ['rgb(75, 163, 229)', 'rgb(58, 135, 234)', 'rgb(80, 192, 237)', 'rgb(242, 159, 43)']
     let hasil = Math.floor((Math.random() * backgroundImage.length - 1) + 1)
     console.log('ini hasil random', hasil)
     
@@ -111,7 +116,8 @@ export default class tictactoe_game extends React.Component {
       avatarColor: avatarBackground[hasil],
       rotateX: posisiX[hasil],
       rotateY: posisiY[hasil],
-      rotateZ: posisiZ[hasil]
+      rotateZ: posisiZ[hasil],
+      labelColor: colorLabel[hasil]
     })
 
     let gambar = [backgroundImage[hasil],colorBackground[hasil], selectColour[hasil],posisiX[hasil], posisiY[hasil], posisiZ[hasil]  ]
@@ -265,7 +271,7 @@ export default class tictactoe_game extends React.Component {
   resetGame() {
     setTimeout(() => {
       NativeModules.LinkingManager.openURL('http://localhost:3000/')
-    }, 2000); 
+    }, 5000); 
   }
 
   fillBoard(index) {
@@ -482,8 +488,11 @@ export default class tictactoe_game extends React.Component {
         db.ref('games').child(this.state.gameId).child('player1').update({
             status: 'Ready',
           })
+        this.setState({player1Color: 'green'})
       }
-    }) 
+    })
+
+    
   }
 
   setPlayer2Ready() {
@@ -493,8 +502,11 @@ export default class tictactoe_game extends React.Component {
         db.ref('games').child(this.state.gameId).child('player2').update({
             status: 'Ready',
           })
+        this.setState({player2Color: 'green'})
       }
     })
+
+    console.log('ini player 2', this.state.player2Color)
   }
   
   componentWillMount() {
@@ -523,7 +535,7 @@ export default class tictactoe_game extends React.Component {
       },
 
       label: {
-        color: 'white',
+        color: 'red',
         fontSize: 0.5,
         marginBottom: 0.2
       },
@@ -663,6 +675,11 @@ export default class tictactoe_game extends React.Component {
     return (
       <View>
         <Pano source={asset(this.state.background)} style={{transform: [{rotateY : this.state.rotateY},{rotateZ : this.state.rotateZ}, {rotateX : this.state.rotateX}]}}/>
+        <Sound 
+          source={{ mp3: asset('starwars.mp3') }}
+          volume={8}
+          loop={true}
+        />
         <View style={styles.topArea}>
                  
           {/* <View style={styles.topItem}>
@@ -691,7 +708,12 @@ export default class tictactoe_game extends React.Component {
                 <Text></Text>
               }
 
-              <VrButton onEnter={() => this.setPlayer1Ready() } style={{ backgroundColor: 'crimson', padding: 0.1, marginTop: 0.5 }}>
+              <VrButton 
+                onEnter={() => this.setPlayer1Ready() } 
+                onEnterSound={{mp3: asset('ready.mp3')}}
+                style={{ backgroundColor: this.state.player1Color, padding: 0.1, marginTop: 0.5 }}
+
+              >
                 <Text style={{ fontColor: '#fff', fontSize: 0.5 }}>{ this.state.player1Status }</Text>
               </VrButton>  
             </View>
@@ -708,7 +730,11 @@ export default class tictactoe_game extends React.Component {
                 this.state.board.map((box, index) => {
                   return (
                     <VrButton key={index} style={this.setBoxContent(index)}
-                      onEnter={() => this.boxFocused(index)} onExit={() => this.boxLeave(index)}>
+                      
+                      onEnter={() => this.boxFocused(index)} 
+                      onEnterSound={{wav: asset('laser.wav')}}
+                      onExit={() => this.boxLeave(index)}
+                      >
                       { this.setBoardPieceContent(index, box) }
                     </VrButton>
                   )
@@ -727,7 +753,11 @@ export default class tictactoe_game extends React.Component {
                 <Text></Text>
               }
 
-              <VrButton onEnter={() => this.setPlayer2Ready()} style={{ backgroundColor: 'crimson', padding: 0.1, marginTop: 0.5 }}>
+              <VrButton 
+                onEnter={() => this.setPlayer2Ready()} 
+                onEnterSound={{mp3: asset('ready.mp3')}}
+                style={{ backgroundColor: this.state.player2Color, padding: 0.1, marginTop: 0.5 }}
+              >
                 <Text style={{ fontColor: '#fff', fontSize: 0.5 }}>{ this.state.player2Status }</Text>
               </VrButton> 
             </View>
