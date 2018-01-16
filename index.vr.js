@@ -393,6 +393,17 @@ export default class tictactoe_game extends React.Component {
             if(snapshot.val().winner === this.state.uid){
               this.checkWinner(`${this.state.player.name} - WIN` )
 
+              db.ref('users').orderByChild('uid').equalTo(playerUID).once('value', snaphotUser => {    
+                snaphotUser.forEach(snapUser => {
+                  let totalPlay = snapUser.val().totalPlay + 1
+                  let win = snapUser.val().win + 1
+                  snapUser.ref.update({
+                    totalPlay: totalPlay,
+                    win: win
+                  })
+                })
+              })
+              
               axios.post('https://us-central1-vtitu-191706.cloudfunctions.net/createHistory', {
                 gameId: this.state.gameId,
                 player1: this.state.player1Name,
@@ -401,9 +412,31 @@ export default class tictactoe_game extends React.Component {
               })
 
             } else if(snapshot.val().winner === 'DRAW') {
+              db.ref('users').orderByChild('uid').equalTo(playerUID).once('value', snaphotUser => {
+                snaphotUser.forEach(snapUser => {
+                  let totalPlay = snapUser.val().totalPlay + 1
+                  let draw = snapUser.val().draw + 1
+                  snapUser.ref.update({
+                    totalPlay: totalPlay,
+                    draw: draw
+                  })
+                })
+              })
+
               this.checkWinner(`${this.state.player.name} - DRAW`)
           
             } else {
+              clearInterval(this.state.timeInterval)
+              db.ref('users').orderByChild('uid').equalTo(playerUID).once('value', snaphotUser => {
+                snaphotUser.forEach(snapUser => {
+                  let totalPlay = snapUser.val().totalPlay + 1
+                  let lose = snapUser.val().lose + 1
+                  snapUser.ref.update({
+                    totalPlay: totalPlay,
+                    lose: lose
+                  })
+                })
+              })
               this.checkWinner(`${this.state.player.name} - LOSE`)
             }
           }
