@@ -49,7 +49,6 @@ export default class tictactoe_game extends React.Component {
       timeout: 0,
       gameCountingTime: 0,
       bounceValue: new Animated.Value(0),
-
       fadeAnim: new Animated.Value(0.1),
       alertBoardPositionY: new Animated.Value(-8),
       timerMessage: '',
@@ -67,6 +66,7 @@ export default class tictactoe_game extends React.Component {
       player1Color: '',
       player2Color: '',
       soundTimer: null,
+      resetTimer: null,
       soundBox: ''
     }
   }
@@ -275,9 +275,17 @@ export default class tictactoe_game extends React.Component {
  }
 
   resetGame() {
-    setTimeout(() => {
+    let resetTimer = setTimeout(() => {
       NativeModules.LinkingManager.openURL('http://localhost:3000/')
-    }, 5000); 
+    }, 2000); 
+
+    this.setState({
+      resetTimer: resetTimer
+    })
+  }
+
+  resetGameLeave() {
+    clearTimeout(this.state.resetTimer)
   }
 
   fillBoard(index) {
@@ -830,7 +838,7 @@ export default class tictactoe_game extends React.Component {
           
           {this.showGameOverIcon(this.state.gameOverMessage) }
 
-          <VrButton onEnter={() => this.resetGame() }>
+          <VrButton onEnter={() => this.resetGame() } onExit={() => this.resetGameLeave()}>
             <Image style={{width: 3, height: 0.8}} source={asset('playagain.png')} />           
           </VrButton>
         </Animated.View>
