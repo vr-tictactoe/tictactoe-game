@@ -9,7 +9,8 @@ import {
   NativeModules,
   VrButton,
   Image,
-  Sound
+  Sound,
+  VrSoundEffects
 } from 'react-vr';
 
 const AnimatedModel = Animated.createAnimatedComponent(Image);
@@ -83,24 +84,9 @@ export default class tictactoe_game extends React.Component {
     ).start(this.rotate);
   }
 
-  soundFocus() {
-    let timerFocused = setTimeout(() => {
-      this.setState({soundBox: 'laser.wav'})
-    }, 1500); 
-
-    this.setState({ 
-      soundTimer: timerFocused
-    })    
-  }
-
-  soundLeave() {
-    clearTimeout(this.state.soundTimer)
-  }
-
   boxFocused(index) {
     const itemFocus = this.state.boxFocus
     itemFocus[index] = true
-
     let timerFocused = setTimeout(() => {
       this.clickBoard(index)
       this.soundFocus()
@@ -147,7 +133,7 @@ export default class tictactoe_game extends React.Component {
     const itemFocus = this.state.boxFocus
     itemFocus[index] = false
     clearTimeout(this.state.boxTimer)
-    this.soundLeave()
+    // this.soundLeave()
 
     this.setState({
       boxFocus: itemFocus
@@ -298,6 +284,7 @@ export default class tictactoe_game extends React.Component {
     if (this.state.board[index] === '' || this.state.board[index] === null) {
       db.ref('games').child(this.state.gameId).once('value', snapshotGame => {
         if (snapshotGame.val().player1.uid === this.state.uid) {
+          VrSoundEffects.play(asset('laser.wav'))
           this.state.board.splice(index, 1, snapshotGame.val().player1.type)
           db.ref('games').child(this.state.gameId).update({
             board: this.state.board,
@@ -305,6 +292,7 @@ export default class tictactoe_game extends React.Component {
           })
         }
         if (snapshotGame.val().player2.uid === this.state.uid) {
+          VrSoundEffects.play(asset('laser.wav'))
           this.state.board.splice(index, 1, snapshotGame.val().player2.type)
           db.ref('games').child(this.state.gameId).update({
             board: this.state.board,
@@ -373,13 +361,9 @@ export default class tictactoe_game extends React.Component {
   }
 
   clickBoard(index) {   
-    console.log(`========================CLICKBOARD`,index)
-    console.log(JSON.stringify(this.state.player))
     db.ref('games').child(this.state.gameId).once('value',checkPlayer => {
       if(checkPlayer.val().player2.uid !== '' && checkPlayer.val().gameStatus === 'Ready'){
         db.ref('games').child(this.state.gameId).child('turn').once('value', checkTurn => {
-          console.log(checkTurn.val())
-
           if (checkTurn.val() === this.state.uid) {
             this.fillBoard(index)
           }
@@ -419,6 +403,17 @@ export default class tictactoe_game extends React.Component {
             if(snapshot.val().winner === this.state.uid){
               this.checkWinner(`${this.state.player.name} - WIN` )
 
+              db.ref('users').orderByChild('uid').equalTo(playerUID).once('value', snaphotUser => {    
+                snaphotUser.forEach(snapUser => {
+                  let totalPlay = snapUser.val().totalPlay + 1
+                  let win = snapUser.val().win + 1
+                  snapUser.ref.update({
+                    totalPlay: totalPlay,
+                    win: win
+                  })
+                })
+              })
+              
               axios.post('https://us-central1-vtitu-191706.cloudfunctions.net/createHistory', {
                 gameId: this.state.gameId,
                 player1: this.state.player1Name,
@@ -428,8 +423,38 @@ export default class tictactoe_game extends React.Component {
 
             } else if(snapshot.val().winner === 'DRAW') {
               this.checkWinner(`${this.state.player.name} - DRAW`)
+              db.ref('users').orderByChild('uid').equalTo(playerUID).once('value', snaphotUser => {
+                snaphotUser.forEach(snapUser => {
+                  let totalPlay = snapUser.val().totalPlay + 1
+                  let draw = snapUser.val().draw + 1
+                  snapUser.ref.update({
+                    totalPlay: totalPlay,
+                    draw: draw
+                  })
+                })
+              })
+
+              if (snapshot.val().turn === this.state.uid) {
+                axios.post('https://us-central1-vtitu-191706.cloudfunctions.net/createHistory', {
+                  gameId: this.state.gameId,
+                  player1: this.state.player1Name,
+                  player2: this.state.player2Name,
+                  winner: 'DRAW',
+                })
+              }
           
             } else {
+              clearInterval(this.state.timeInterval)
+              db.ref('users').orderByChild('uid').equalTo(playerUID).once('value', snaphotUser => {
+                snaphotUser.forEach(snapUser => {
+                  let totalPlay = snapUser.val().totalPlay + 1
+                  let lose = snapUser.val().lose + 1
+                  snapUser.ref.update({
+                    totalPlay: totalPlay,
+                    lose: lose
+                  })
+                })
+              })
               this.checkWinner(`${this.state.player.name} - LOSE`)
             }
           }
@@ -502,9 +527,9 @@ export default class tictactoe_game extends React.Component {
   }
 
   setPlayer1Ready() {     
-    console.log('masuk sini player1')
     db.ref('games').child(this.state.gameId).once('value', snapUser => {
-      if(snapUser.val().player1.uid === this.state.uid && snapUser.val().player1.status !== 'Ready'){     
+      if(snapUser.val().player1.uid === this.state.uid && snapUser.val().player1.status !== 'Ready'){ 
+        VrSoundEffects.play(asset('ready.mp3'))   
         db.ref('games').child(this.state.gameId).child('player1').update({
             status: 'Ready',
           })
@@ -516,9 +541,9 @@ export default class tictactoe_game extends React.Component {
   
 
   setPlayer2Ready() {
-    console.log('masuk sini player2')
     db.ref('games').child(this.state.gameId).once('value', snapUser => {
-      if(snapUser.val().player2.uid === this.state.uid && snapUser.val().player2.status !== 'Ready'){       
+      if(snapUser.val().player2.uid === this.state.uid && snapUser.val().player2.status !== 'Ready'){
+        VrSoundEffects.play(asset('ready.mp3'))          
         db.ref('games').child(this.state.gameId).child('player2').update({
             status: 'Ready',
           })
@@ -529,7 +554,9 @@ export default class tictactoe_game extends React.Component {
     console.log('ini player 2', this.state.player2Color)
   }
   
-  componentWillMount() {
+  componentWillMount() {  
+    VrSoundEffects.load(asset('laser.wav'))
+    VrSoundEffects.load(asset('ready.mp3'))
     this.randomBackground()
   }
 
@@ -558,7 +585,8 @@ export default class tictactoe_game extends React.Component {
         color: 'white',
         fontWeight: 'bold',
         fontSize: 0.5,
-        marginBottom: 0.2
+        marginBottom: 0.2,
+        fontWeight: 'bold'
       },
 
       resetButton: {
@@ -692,7 +720,7 @@ export default class tictactoe_game extends React.Component {
         alignItems: 'center'
       }
     }
-    
+
     return (
       <View>
         <Pano source={asset(this.state.background)} style={{transform: [{rotateY : this.state.rotateY},{rotateZ : this.state.rotateZ}, {rotateX : this.state.rotateX}]}}/>
@@ -731,11 +759,10 @@ export default class tictactoe_game extends React.Component {
 
               <VrButton 
                 onEnter={() => this.setPlayer1Ready() } 
-                onEnterSound={{mp3: asset('ready.mp3')}}
                 style={{ backgroundColor: this.state.player1Color, padding: 0.1, marginTop: 0.5 }}
 
               >
-                <Text style={{ fontColor: '#fff', fontSize: 0.5 }}>{ this.state.player1Status }</Text>
+                <Text style={{ color: '#fff', fontSize: 0.5 }}>{ this.state.player1Status }</Text>
               </VrButton>  
             </View>
             <Image style={styles.sideItem} source={asset('left.png')} />        
@@ -751,9 +778,7 @@ export default class tictactoe_game extends React.Component {
                 this.state.board.map((box, index) => {
                   return (
                     <VrButton key={index} style={this.setBoxContent(index)}
-                      
                       onEnter={() => this.boxFocused(index)} 
-                      onEnterSound={{wav: asset(this.state.soundBox)}}
                       onExit={() => this.boxLeave(index)}
                       >
                       { this.setBoardPieceContent(index, box) }
@@ -776,10 +801,9 @@ export default class tictactoe_game extends React.Component {
 
               <VrButton 
                 onEnter={() => this.setPlayer2Ready()} 
-                onEnterSound={{mp3: asset('ready.mp3')}}
                 style={{ backgroundColor: this.state.player2Color, padding: 0.1, marginTop: 0.5 }}
               >
-                <Text style={{ fontColor: '#fff', fontSize: 0.5 }}>{ this.state.player2Status }</Text>
+                <Text style={{ color: '#fff', fontSize: 0.5 }}>{ this.state.player2Status }</Text>
               </VrButton> 
             </View>
           </View>
