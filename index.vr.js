@@ -277,7 +277,7 @@ export default class tictactoe_game extends React.Component {
   resetGame() {
     setTimeout(() => {
       NativeModules.LinkingManager.openURL('https://backup-vr-tictactoe.firebaseapp.com')
-    }, 1500);
+    }, 3000);
   }
 
   fillBoard(index) {
@@ -663,7 +663,7 @@ export default class tictactoe_game extends React.Component {
         layoutOrigin: [0.5, 0.5],
         opacity: this.state.fadeAnim,
         transform: [
-          { translate: [0, this.state.alertBoardPositionY, -10] },
+          { translate: [0, this.state.alertBoardPositionY, -14] },
           { scale: 1.5 }
         ],
         alignItems: 'center',
