@@ -89,6 +89,8 @@ export default class tictactoe_game extends React.Component {
     itemFocus[index] = true
     let timerFocused = setTimeout(() => {
       this.clickBoard(index)
+      this.soundFocus()
+      console.log('ini sound', this.state.soundBox)
     }, 1500); 
 
     this.setState({ 
@@ -206,6 +208,7 @@ export default class tictactoe_game extends React.Component {
   }
 
   gameCountDown(duration) {
+    console.log('masuk sini')
      let { gameCountingTime } = this.state
      var timer = duration, seconds;
      var countdownInterval = setInterval(() => {
@@ -526,7 +529,7 @@ export default class tictactoe_game extends React.Component {
   setPlayer1Ready() {     
     db.ref('games').child(this.state.gameId).once('value', snapUser => {
       if(snapUser.val().player1.uid === this.state.uid && snapUser.val().player1.status !== 'Ready'){ 
-        VrSoundEffects.play(asset('ready.mp3'))   
+        VrSoundEffects.play(asset('ready2.wav'))   
         db.ref('games').child(this.state.gameId).child('player1').update({
             status: 'Ready',
           })
@@ -540,7 +543,7 @@ export default class tictactoe_game extends React.Component {
   setPlayer2Ready() {
     db.ref('games').child(this.state.gameId).once('value', snapUser => {
       if(snapUser.val().player2.uid === this.state.uid && snapUser.val().player2.status !== 'Ready'){
-        VrSoundEffects.play(asset('ready.mp3'))          
+        VrSoundEffects.play(asset('ready2.wav'))          
         db.ref('games').child(this.state.gameId).child('player2').update({
             status: 'Ready',
           })
@@ -553,7 +556,7 @@ export default class tictactoe_game extends React.Component {
   
   componentWillMount() {  
     VrSoundEffects.load(asset('laser.wav'))
-    VrSoundEffects.load(asset('ready.mp3'))
+    VrSoundEffects.load(asset('ready2.wav'))
     this.randomBackground()
   }
 
@@ -579,7 +582,8 @@ export default class tictactoe_game extends React.Component {
       },
 
       label: {
-        color: 'red',
+        color: 'white',
+        fontWeight: 'bold',
         fontSize: 0.5,
         marginBottom: 0.2,
         fontWeight: 'bold'
@@ -723,6 +727,11 @@ export default class tictactoe_game extends React.Component {
         <Sound 
           source={{ mp3: asset('starwars.mp3') }}
           volume={50}
+          loop={true}
+        />
+        <Sound 
+          source={{ mp3: asset('fighter.mp3') }}
+          volume={20}
           loop={true}
         />
         <View style={styles.topArea}>
