@@ -64,8 +64,8 @@ export default class tictactoe_game extends React.Component {
       avatarColor: '',
       labelColor: '',
       rotation: new Animated.Value(0),
-      player1Color: '' || 'crimson',
-      player2Color: '' || 'crimson',
+      player1Color: '',
+      player2Color: '',
       soundTimer: null,
       soundBox: ''
     }
@@ -486,6 +486,19 @@ export default class tictactoe_game extends React.Component {
 
 
           snapshot = snapshot.val()
+          let colorReady1 = ''
+          let colorReady2 = ''
+          if(snapshot.player1.status !== 'Ready'){
+            colorReady1 = 'crimson'
+          }else{
+            colorReady1 = 'green'
+          }
+
+          if (snapshot.player2.status !== 'Ready') {
+            colorReady2 = 'crimson'
+          } else {
+            colorReady2 = 'green'
+          }
           this.setState({
             board: snapshot.board,
             player1Avatar: snapshot.player1.avatar,
@@ -496,6 +509,8 @@ export default class tictactoe_game extends React.Component {
             player2Type: snapshot.player2.type,
             player1Status: snapshot.player1.status,
             player2Status: snapshot.player2.status,
+            player1Color: colorReady1,
+            player2Color: colorReady2,
           })
         }
       })
@@ -533,7 +548,6 @@ export default class tictactoe_game extends React.Component {
         db.ref('games').child(this.state.gameId).child('player1').update({
             status: 'Ready',
           })
-        this.setState({player1Color: 'green'})
       }
     })
   }
@@ -547,11 +561,8 @@ export default class tictactoe_game extends React.Component {
         db.ref('games').child(this.state.gameId).child('player2').update({
             status: 'Ready',
           })
-        this.setState({player2Color: 'green'})
       }
     })
-
-    console.log('ini player 2', this.state.player2Color)
   }
   
   componentWillMount() {  
