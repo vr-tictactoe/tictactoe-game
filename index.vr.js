@@ -462,7 +462,7 @@ export default class tictactoe_game extends React.Component {
             })
           }else if(snapshot.val().player2.uid !== '' && snapshot.val().gameStatus !== 'Ready'){
             this.setState({
-              message: 'If you Ready Focus Box below your Avatar '
+              message: 'Start the game by focusing on Ready button below your Avatar.'
             })
           }else if(snapshot.val().turn === this.state.uid && snapshot.val().gameStatus === 'Ready'){
             clearInterval(this.state.countdownInterval)
